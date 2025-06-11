@@ -1,0 +1,22 @@
+---
+title: "Data Process"
+author: "Jacky Wang"
+format: html
+editor: source
+---
+
+## Package
+
+```{r}
+
+library(readxl)
+
+```
+
+## Data
+
+```{r}
+
+load(file = "data/vegetable_mdlData_raw.Rda")
+
+```
