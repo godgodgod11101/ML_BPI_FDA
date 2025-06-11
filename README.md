@@ -1,2 +1,2 @@
 # ML_BPI_FDA
-BPI模型調整測試
+邊境智能預測(Border Predict Intelligence, BPI)模型調整測試
