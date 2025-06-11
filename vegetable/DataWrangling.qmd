@@ -1,0 +1,31 @@
+---
+title: "Data Wrangling"
+author: "Jacky Wang"
+format: html
+editor: source
+---
+
+## Package
+
+```{r}
+
+library(dplyr)
+library(stringr)
+
+```
+
+## Data
+
+```{r}
+load(file = "data/vegetable_ori.rda")
+```
+
+
+## 
+
+```{r}
+
+
+```
+
+
