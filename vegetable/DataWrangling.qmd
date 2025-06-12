@@ -9,23 +9,76 @@ editor: source
 
 ```{r}
 
+# tidyverse
 library(dplyr)
 library(stringr)
 
 ```
 
-## Data
+## Data Import
 
 ```{r}
 load(file = "data/vegetable_ori.rda")
 ```
 
 
+## Data Wrangling
+
+### others
+
+```{r}
+
+tbl_others <- tbl_ori %>% 
+    select(簽審核准許可文件編號, 報單項次, 受理日期)
+
+```
+
+```{r}
+
+# 檢視缺失值 
+tbl_others %>% 
+    summarise(
+        .data = ., 
+        across(    # 套用至多個欄位
+            .cols = everything(),    # tidy-select
+            .fns = list(n_na = ~ sum(is.na(.x))),    # purrr-style lambda
+            .names = "{.fn}({.col})"
+        )
+  )
+
+# 檢視有無重複簽審
+tbl_others %>% 
+    summarise(., n_unique = n_distinct(簽審核准許可文件編號))
+
+```
+
+```{r}
+
+# 檢視欄位內容格式
+
+#   簽審編號
+pat_sn <- c("IF[A-Z]0[0-9][A-Z0-9]{2}[0-9]{7}")
+tbl_others %>% 
+    summarise(., n_abnormal = sum(!str_detect(簽審核准許可文件編號, pat_sn)))
+
+#   日期
+pat_date <- c("(201[1-9]|2020)-[0-9]{2}-[0-9]{2}")
+tbl_others %>% 
+    summarise(., n_abnormal = sum(!str_detect(受理日期, pat_date)))
+
+rm(pat_sn, pat_date)
+```
+
+
+
 ## 
 
 ```{r}
 
+tbl_others[str_detect(tbl_others$簽審核准許可文件編號, "IFT01.+"), ]
+
 
 ```
+
 
 
