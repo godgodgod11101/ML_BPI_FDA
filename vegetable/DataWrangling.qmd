@@ -10,6 +10,7 @@ editor: source
 ```{r}
 
 # tidyverse
+library(tibble)
 library(dplyr)
 library(stringr)
 
@@ -57,26 +58,80 @@ tbl_others %>%
 # 檢視欄位內容格式
 
 #   簽審編號
-pat_sn <- c("IF[A-Z]0[0-9][A-Z0-9]{2}[0-9]{7}")
+pat_sn <- "IF[A-Z]0[0-9][A-Z0-9]{2}[0-9]{7}"    # length 1 atomic vector
 tbl_others %>% 
     summarise(., n_abnormal = sum(!str_detect(簽審核准許可文件編號, pat_sn)))
 
 #   日期
-pat_date <- c("(201[1-9]|2020)-[0-9]{2}-[0-9]{2}")
+pat_date <- "(201[1-9]|2020)-[0-9]{2}-[0-9]{2}"
 tbl_others %>% 
     summarise(., n_abnormal = sum(!str_detect(受理日期, pat_date)))
 
 rm(pat_sn, pat_date)
 ```
 
+### main
 
-
-## 
+#### target
 
 ```{r}
 
-tbl_others[str_detect(tbl_others$簽審核准許可文件編號, "IFT01.+"), ]
+# tbl_ori$`批檢驗結果(除去標示因素)` %>% 
+#     factor(., levels = c("合格", "不合格")) %>% 
+#     summary()    # summary factor
 
+# target
+y <- tbl_ori$`批檢驗結果(除去標示因素)` %>% 
+    factor(., 
+        levels = c("合格", "不合格"),    # 將預測目標放後
+        labels = c("Pass", "Fail")
+    )
+
+```
+
+#### features
+
+```{r}
+
+# 黑名單因子
+tbl_X_g1 <- tbl_ori %>% 
+    select(contains("黑名單")) %>% 
+    mutate(
+        across(    # 套用至多個欄位
+            .cols = everything(),    # tidy-select
+            .fns = ~ factor(.x, levels = c("0", "1"), labels = c("no", "yes")), 
+            .names = "{.col}_"    # 不改欄位名稱表示取代
+        )
+        , .keep = "none"    # 不保留原始資料
+    ) %>% 
+    rename(
+         `黑名單產品(75%)` = `黑名單產品_`, 
+         `黑名單號列(75%)` = `黑名單號列_`, 
+         `黑名單號列(avg)` = `黑名單產品(舊)_`,
+         `黑名單生產國(75%)` = `黑名單生產國_`,
+         `黑名單進口商(75%)` = `黑名單進口商_`,
+    )
+
+# 檢視轉換結果
+tbl_X_g1 %>% summary()
+
+```
+
+```{r}
+# 嘗試迴圈寫法
+
+```
+
+
+
+```{r}
+
+cols_exc <- c(names(tbl_others), "批檢驗結果(除去標示因素)")
+
+tbl_ori %>% 
+    select(!(all_of(cols_exc) | contains("黑名單")))
+
+# 檢視每一欄位的值是否含 "無"
 
 ```
 
