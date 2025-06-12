@@ -125,15 +125,58 @@ tbl_X_g1 %>% summary()
 
 
 ```{r}
+library(purrr)
+```
 
-cols_exc <- c(names(tbl_others), "批檢驗結果(除去標示因素)")
-
-tbl_ori %>% 
-    select(!(all_of(cols_exc) | contains("黑名單")))
+```{r}
 
 # 檢視每一欄位的值是否含 "無"
+cols_exc <- c(names(tbl_others), "批檢驗結果(除去標示因素)")
+
+pick_naCols <- tbl_ori %>% 
+    select(!(all_of(cols_exc) | contains("黑名單"))) %>% 
+    map(.x = ., .f = \(x) levels(as.factor(x))) %>%    # df（包含tbl）為list，可直接當作參數
+    map_lgl(., \(x) any(str_detect(x, "無")))
+
+cols_na <- names(pick_naCols)[pick_naCols]
 
 ```
+
+```{r}
+
+# 將 "無..." 轉為 NA
+
+ori_lev <- tbl_ori[cols_na] %>% 
+    map(\(x) unique(x))
+
+pick_lev <- tbl_ori[cols_na] %>% 
+    map(\(x) !str_detect(unique(x), "無"))
+
+new_lev <- map2(
+    .x = ori_lev, .y = pick_lev, 
+    .f = \(x, y) x[y]
+)
+
+map2(
+    .x = tbl_ori[cols_na], .y = new_lev, 
+    .f = \(x, y) factor(x, levels = y, labels = seq_along(y))
+)
+# 轉成 tibble
+
+```
+
+
+```{r}
+
+tbl_ori$是否為純輸入業 %>% 
+    factor(levels = c("0", "1"))
+
+levels()
+
+```
+
+
+
 
 
 
