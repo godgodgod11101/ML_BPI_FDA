@@ -1,15 +1,31 @@
 ---
-title: "Data Wrangling"
+title: "BPI Model Improvement"
 author: "Jacky Wang"
-format: html
-editor: source
+format:
+    html:
+        theme: cosmo
+        toc: true
+        toc-location: left
+        toc-depth: 2
+        css: "DataWrangling_files/toc-style.css"
 ---
+
+
+
+## Introduction
+
+針對農產品類進口報單模型進行資料調整評估，包含：  
+
+* 調整資料擷取期間：參考農藥殘留法規變動時間點，擷取不同期間資料建模，評估是否能提升模型預測表現。
+* 放入高風險特徵：設計不同高風險特徵放入模型，評估是否能提升模型預測表現。
 
 
 
 ## Package
 
 ```{r}
+#| message: false
+#| warning: false
 
 # tidyverse
 library(tibble)
@@ -134,8 +150,6 @@ tbl_X_g1 %>% summary()
 # 嘗試迴圈寫法
 
 ```
-
-
 
 ```{r}
 
@@ -284,6 +298,7 @@ rm(tbl_wra_sub, tbl_train, tbl_train_130101, tbl_train_140703, tbl_test)
 ```{r}
 # save(lst_mdlData, file = "data/vegetable_ds.rda")
 ```
+
 
 
 
