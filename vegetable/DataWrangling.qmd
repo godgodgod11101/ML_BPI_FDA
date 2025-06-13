@@ -231,6 +231,7 @@ rm(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)
 
 ```{r}
 
+# 特徵名稱轉代號
 tbl_name2sym <- tibble(
     `C Names` = names(tbl_wra[-c(1:2)]), 
     `C Symbols` = paste0("X_", seq_along(tbl_wra[-c(1:2)]))
@@ -240,16 +241,49 @@ names(tbl_wra)[-c(1:2)] <- tbl_name2sym$`C Symbols`
 
 ```
 
+### to .rda
 
 ```{r}
 
-lst_mdlData <- list()
+tbl_wra_sub <- tbl_wra[c(T, T, !str_detect(tbl_name2sym$`C Names`, "黑名單"))]
 
-tbl_wra[c(T, T, !str_detect(tbl_name2sym$`C Names`, "黑名單"))]
+tbl_train <- tbl_wra_sub %>% 
+    filter(Date < as.Date("2019-01-01")) %>% 
+    select(!Date)
+
+tbl_train_130101 <- tbl_wra_sub %>% 
+    filter(Date >= as.Date("2013-01-01") & Date < as.Date("2019-01-01")) %>% 
+    select(!Date)
+
+tbl_train_140703 <- tbl_wra_sub %>% 
+    filter(Date >= as.Date("2014-07-03") & Date < as.Date("2019-01-01")) %>% 
+    select(!Date)
+
+tbl_test <- tbl_wra_sub %>% 
+    filter(Date >= as.Date("2019-01-01")) %>% 
+    select(!Date)
+
+# 組成 list
+lst_mdlData <- list(
+    train = list(
+        `all` = tbl_train, 
+        `130101` = tbl_train_130101, 
+        `140703` = tbl_train_140703
+    ), 
+    test = list(`test` = tbl_test), 
+    others = list(
+        `sn` = tbl_others, 
+        `fName` = tbl_name2sym
+    )
+)
 
 
+rm(tbl_wra_sub, tbl_train, tbl_train_130101, tbl_train_140703, tbl_test)
 ```
 
+```{r}
+# save(lst_mdlData, file = "data/vegetable_ds.rda")
+```
 
 
 

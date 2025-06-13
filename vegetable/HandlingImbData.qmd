@@ -1,0 +1,30 @@
+---
+title: "Handling Imb"
+author: "Jacky Wang"
+format: html
+editor: source
+---
+
+## Package
+
+```{r}
+
+# tidyverse
+library(tibble)
+library(dplyr)
+# library(stringr)
+# library(purrr)    # map, modify
+# library(tidyr)    # handle missing values
+
+```
+
+
+
+## Data Import
+
+```{r}
+load(file = "data/vegetable_ds.rda")
+```
+
+
+
