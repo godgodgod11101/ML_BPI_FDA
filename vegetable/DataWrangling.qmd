@@ -5,6 +5,8 @@ format: html
 editor: source
 ---
 
+
+
 ## Package
 
 ```{r}
@@ -14,14 +16,19 @@ library(tibble)
 library(dplyr)
 library(stringr)
 library(purrr)    # map, modify
+library(tidyr)    # handle missing values
 
 ```
+
+
 
 ## Data Import
 
 ```{r}
 load(file = "data/vegetable_ori.rda")
 ```
+
+
 
 ## Data Wrangling
 
@@ -63,11 +70,17 @@ tbl_others %>%
     summarise(., n_abnormal = sum(!str_detect(簽審核准許可文件編號, pat_sn)))
 
 #   日期
-pat_date <- "(201[1-9]|2020)-[0-9]{2}-[0-9]{2}"
-tbl_others %>% 
-    summarise(., n_abnormal = sum(!str_detect(受理日期, pat_date)))
+n_abn <- tbl_ori$受理日期 %>% as.Date() %>% is.na() %>% sum()
+tibble(n_abnormal = n_abn)
 
-rm(pat_sn, pat_date)
+rm(pat_sn, n_abn)
+```
+
+```{r}
+
+tbl_others <- tbl_others %>% 
+    mutate(受理日期 = as.Date(受理日期))
+
 ```
 
 ### main
@@ -173,25 +186,69 @@ rm(cols_na, ori_lev, pick_lev, new_lev)
 # modify: returns the same type as the input object
 ```
 
+```{r}
 
+# 其餘特徵重設levels
 
+#   排除已處理欄位
+cols_exc <- c(names(tbl_others), "批檢驗結果(除去標示因素)", names(tbl_X_g2))
 
+tbl_ori_rest <- tbl_ori %>% 
+    select(!(all_of(cols_exc) | contains("黑名單")))
+
+#   重設levels（1, 2, 3, ...）
+ori_lev <- tbl_ori_rest %>% 
+    map(\(x) {as.character(x) %>% unique() %>% sort()})
+
+tbl_X_g3 <- modify2(
+    tbl_ori_rest, ori_lev, 
+    \(x, y) factor(x, levels = y, labels = seq_along(y))
+)
+
+rm(cols_exc, tbl_ori_rest, ori_lev)
+```
+
+#### combine
 
 ```{r}
 
-# 其餘特徵
+tbl_wra <- bind_cols(
+    tibble(
+        `Date` = tbl_others$受理日期, 
+        `Y` = y
+    ), 
+    tbl_X_g1, tbl_X_g2, tbl_X_g3
+) %>% 
+    drop_na()    # 暫不嘗試補值
 
-#   已處理欄位名稱
-cols_exc <- c(names(tbl_others), "批檢驗結果(除去標示因素)", names(tbl_X_g2)) 
 
-#
-tbl_ori %>% 
-    select(!(all_of(cols_exc) | contains("黑名單")))    # 排除已處理欄位
-
+rm(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)
 ```
 
 
 
+## Prepare Data
+
+```{r}
+
+tbl_name2sym <- tibble(
+    `C Names` = names(tbl_wra[-c(1:2)]), 
+    `C Symbols` = paste0("X_", seq_along(tbl_wra[-c(1:2)]))
+)
+
+names(tbl_wra)[-c(1:2)] <- tbl_name2sym$`C Symbols`
+
+```
+
+
+```{r}
+
+lst_mdlData <- list()
+
+tbl_wra[c(T, T, !str_detect(tbl_name2sym$`C Names`, "黑名單"))]
+
+
+```
 
 
 
