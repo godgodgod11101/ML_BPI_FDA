@@ -9,3 +9,8 @@ nav#TOC ul li a {
     font-size: 1.2em;
     margin-bottom: 10px;
 }
+
+nav#TOC {
+    margin-top: 45px;
+    margin-left: 45px; 
+}
