@@ -1,19 +1,29 @@
 ---
-title: "Handling Imb"
+title: "BPI Model Improvement"
 author: "Jacky Wang"
-format: html
-editor: source
+format:
+    html:
+        theme: cosmo
+        toc: true
+        toc-depth: 2
+        toc-location: right
+        toc-title: "On this page"
 ---
+
+
 
 ## Package
 
 ```{r}
+#| message: false
+#| warning: false
 
 # tidyverse
 library(tibble)
 library(dplyr)
+library(purrr)    # map, modify
 # library(stringr)
-# library(purrr)    # map, modify
+
 # library(tidyr)    # handle missing values
 
 ```
@@ -25,6 +35,47 @@ library(dplyr)
 ```{r}
 load(file = "data/vegetable_ds.rda")
 ```
+
+
+
+## Handling Imbalanced Datasets
+
+```{r}
+
+# 目標（不合格報單）占整體比例
+
+#   function
+target_ratio <- function(vec_y) {
+    
+    pf <- vec_y %>% summary()
+    n_fail <- pf[[2]]
+    n <- sum(pf)
+    f_ratio <- n_fail / n
+    
+    f_ratio_ch <- round(f_ratio*100, digits = 2) %>% 
+        as.character() %>% 
+        paste0(., "%")
+    rsl <- f_ratio_ch %>% 
+        paste0(., " (", as.character(n_fail), "/", as.character(n), ")")
+    
+    return(rsl)
+}
+
+#   print
+target_ratio(lst_mdlData[["train"]][["all"]]$Y) %>% cat("all:", ., "\n")
+target_ratio(lst_mdlData[["train"]][["130101"]]$Y) %>% cat("130101:", ., "\n")
+target_ratio(lst_mdlData[["train"]][["140703"]]$Y) %>% cat("140703:", ., "\n")
+
+# [[]] 與 $ （取元素）用法相同，不同於 [] （保留外層結構）
+```
+
+```{r}
+
+target_ratio(lst_mdlData[["train"]]$all$Y)
+
+```
+
+
 
 
 
