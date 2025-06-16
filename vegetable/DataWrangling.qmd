@@ -13,17 +13,26 @@ format:
 
 
 
+## Code Structure
+
+1. **資料清理（DataWrangling.qmd）**
+2. 資料不平衡處理（HandlingImbData.qmd）
+
+
+
 ## Introduction
 
-針對農產品類進口報單模型進行資料調整評估，包含：  
+本程式檔執行內容如下：
 
-* 調整資料擷取期間：參考農藥殘留法規變動時間點，擷取不同期間資料建模，評估是否能提升模型預測表現。
-* 放入高風險特徵：設計不同高風險特徵放入模型，評估是否能提升模型預測表現。
+1. **Import**：引入資料，資料來源為BPI資料庫。本次測試主題為調整資料擷取期間與放入高風險特徵，故從資料庫擷取特徵篩選後的資料，以在資料前處理條件相同下進行後續建模比較。
+2. **Tidy & Transform**：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含空值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。
+3. **Split**：切分訓練與測試集。設定不同資料期間、高風險特徵之訓練集，存成`.rda`，供後續建模使用。
 
 
 
 ## Package
 
+引入所需套件
 ```{r}
 #| message: false
 #| warning: false
@@ -39,15 +48,18 @@ library(tidyr)    # handle missing values
 
 
 
-## Data Import
+## Import
 
+引入資料
 ```{r}
 load(file = "data/vegetable_ori.rda")
 ```
 
 
 
-## Data Wrangling
+
+
+## Tidy & Transform
 
 ### others
 
@@ -242,7 +254,7 @@ rm(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)
 
 
 
-## Prepare Data
+## Split
 
 ```{r}
 

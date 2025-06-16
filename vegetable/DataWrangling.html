@@ -83,11 +83,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#code-structure" id="toc-code-structure" class="nav-link active" data-scroll-target="#code-structure">Code Structure</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#package" id="toc-package" class="nav-link" data-scroll-target="#package">Package</a></li>
-  <li><a href="#data-import" id="toc-data-import" class="nav-link" data-scroll-target="#data-import">Data Import</a></li>
-  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">Data Wrangling</a></li>
-  <li><a href="#prepare-data" id="toc-prepare-data" class="nav-link" data-scroll-target="#prepare-data">Prepare Data</a></li>
+  <li><a href="#import" id="toc-import" class="nav-link" data-scroll-target="#import">Import</a></li>
+  <li><a href="#tidy-transform" id="toc-tidy-transform" class="nav-link" data-scroll-target="#tidy-transform">Tidy &amp; Transform</a></li>
+  <li><a href="#split" id="toc-split" class="nav-link" data-scroll-target="#split">Split</a></li>
   </ul>
 </nav>
 </div>
@@ -118,16 +119,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="code-structure" class="level2">
+<h2 class="anchored" data-anchor-id="code-structure">Code Structure</h2>
+<ol type="1">
+<li><strong>資料清理（DataWrangling.qmd）</strong></li>
+<li>資料不平衡處理（HandlingImbData.qmd）</li>
+</ol>
+</section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>針對農產品類進口報單模型進行資料調整評估，包含：</p>
-<ul>
-<li>調整資料擷取期間：參考農藥殘留法規變動時間點，擷取不同期間資料建模，評估是否能提升模型預測表現。</li>
-<li>放入高風險特徵：設計不同高風險特徵放入模型，評估是否能提升模型預測表現。</li>
-</ul>
+<p>本程式檔執行內容如下：</p>
+<ol type="1">
+<li><strong>Import</strong>：引入資料，資料來源為BPI資料庫。本次測試主題為調整資料擷取期間與放入高風險特徵，故從資料庫擷取特徵篩選後的資料，以在資料前處理條件相同下進行後續建模比較。</li>
+<li><strong>Tidy &amp; Transform</strong>：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含空值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。</li>
+<li><strong>Split</strong>：切分訓練與測試集。設定不同資料期間、高風險特徵之訓練集，存成<code>.rda</code>，供後續建模使用。</li>
+</ol>
 </section>
 <section id="package" class="level2">
 <h2 class="anchored" data-anchor-id="package">Package</h2>
+<p>引入所需套件</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tidyverse</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
@@ -137,14 +147,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)    <span class="co"># handle missing values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="data-import" class="level2">
-<h2 class="anchored" data-anchor-id="data-import">Data Import</h2>
+<section id="import" class="level2">
+<h2 class="anchored" data-anchor-id="import">Import</h2>
+<p>引入資料</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">"data/vegetable_ori.rda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="data-wrangling" class="level2">
-<h2 class="anchored" data-anchor-id="data-wrangling">Data Wrangling</h2>
+<section id="tidy-transform" class="level2">
+<h2 class="anchored" data-anchor-id="tidy-transform">Tidy &amp; Transform</h2>
 <section id="others" class="level3">
 <h3 class="anchored" data-anchor-id="others">others</h3>
 <div class="cell">
@@ -344,8 +355,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 </section>
-<section id="prepare-data" class="level2">
-<h2 class="anchored" data-anchor-id="prepare-data">Prepare Data</h2>
+<section id="split" class="level2">
+<h2 class="anchored" data-anchor-id="split">Split</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 特徵名稱轉代號</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>tbl_name2sym <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
