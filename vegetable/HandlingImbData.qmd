@@ -22,9 +22,6 @@ format:
 library(tibble)
 library(dplyr)
 library(purrr)    # map, modify
-# library(stringr)
-
-# library(tidyr)    # handle missing values
 
 ```
 
@@ -45,35 +42,80 @@ load(file = "data/vegetable_ds.rda")
 # 目標（不合格報單）占整體比例
 
 #   function
-target_ratio <- function(vec_y) {
+fail_ratio <- function(vec_y) {
     
     pf <- vec_y %>% summary()
     n_fail <- pf[[2]]
-    n <- sum(pf)
-    f_ratio <- n_fail / n
+    n_pass <- pf[[1]]
+    f_ratio <- n_fail / (n_fail+n_pass)
     
     f_ratio_ch <- round(f_ratio*100, digits = 2) %>% 
         as.character() %>% 
         paste0(., "%")
-    rsl <- f_ratio_ch %>% 
-        paste0(., " (", as.character(n_fail), "/", as.character(n), ")")
+    rsl <- list(`fail_ratio`=f_ratio_ch, `n_fail`=n_fail, `n_pass`=n_pass)
     
     return(rsl)
 }
 
 #   print
-target_ratio(lst_mdlData[["train"]][["all"]]$Y) %>% cat("all:", ., "\n")
-target_ratio(lst_mdlData[["train"]][["130101"]]$Y) %>% cat("130101:", ., "\n")
-target_ratio(lst_mdlData[["train"]][["140703"]]$Y) %>% cat("140703:", ., "\n")
-
+bind_rows(
+    fail_ratio(lst_mdlData[["train"]][["all"]]$Y), 
+    fail_ratio(lst_mdlData[["train"]][["130101"]]$Y), 
+    fail_ratio(lst_mdlData[["train"]][["140703"]]$Y)
+)
 # [[]] 與 $ （取元素）用法相同，不同於 [] （保留外層結構）
+
+```
+
+### handling
+
+```{r}
+#| message: false
+#| warning: false
+
+library(recipes)    # build feature engineering steps
+library(themis)    # dealing with unbalanced data
+
 ```
 
 ```{r}
 
-target_ratio(lst_mdlData[["train"]]$all$Y)
+upsample_bake <- function(prep_train) {
+    
+    rec <- recipe(Y ~ ., data = lst_mdlData$train$all) %>% 
+        # 定義資料結構的資料集（定義formula、儲存欄位型別）
+        
+        step_upsample(Y, over_ratio = 3/7) %>%
+        # skip=TRUE (default): 若bake()中new_data非NULL，此步驟會跳過（表示只用於訓練集）
+        
+        prep(training = prep_train)
+        # 配適的資料集（後續會根據此資料集的少數類別樣本做過採樣）
+    
+    rsl <- bake(rec, new_data = NULL) 
+    # 處理的資料集（NULL表示直接作用於配適的資料集）
+    
+    return(rsl)
+}
+
+a_rs <- upsample_bake(lst_mdlData$train$all)
+a130101_rs <- upsample_bake(lst_mdlData$train$`130101`)
+a140703_rs <- upsample_bake(lst_mdlData$train$`140703`)
 
 ```
+
+```{r}
+
+# 檢查處理後占比
+bind_rows(
+    fail_ratio(a_rs$Y), 
+    fail_ratio(a130101_rs$Y), 
+    fail_ratio(a140703_rs$Y)
+)
+
+```
+
+
+
 
 
 
