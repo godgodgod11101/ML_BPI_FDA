@@ -9,6 +9,7 @@ format:
         toc-location: right
         toc-title: "On this page"
         css: "css_toc/toc-style.css"
+        df-print: paged
 ---
 
 
@@ -55,24 +56,38 @@ library(tidyr)    # handle missing values
 load(file = "data/vegetable_ori.rda")
 ```
 
+```{r}
+#| echo: false
+cat("資料維度：", dim(tbl_ori)[[1]], "obs. of", dim(tbl_ori)[[2]], "variables")
+```
 
+顯示部分資料內容
+```{r}
+#| echo: false
+tbl_ori[c(1:4, 15)] %>% 
+    mutate(
+        簽審核准許可文件編號 = {str_sub(簽審核准許可文件編號, end = 6L) %>% str_c("...")}, 
+        受理日期 = {str_sub(受理日期, end = 5L) %>% str_c("...")}
+    ) %>% 
+    head(n = 5L)
+```
 
 
 
 ## Tidy & Transform
 
+資料清理與轉換
+
 ### others
 
+將非用於建模之報單額外資訊另存於資料表 `tbl_others`
 ```{r}
-
 tbl_others <- tbl_ori %>% 
     select(簽審核准許可文件編號, 報單項次, 受理日期)
-
 ```
 
+檢視有無 **缺失值**
 ```{r}
-
-# 檢視缺失值 
 tbl_others %>% 
     summarise(
         .data = ., 
@@ -82,17 +97,16 @@ tbl_others %>%
             .names = "{.fn}({.col})"
         )
   )
-
-# 檢視有無重複簽審
-tbl_others %>% 
-    summarise(., n_unique = n_distinct(簽審核准許可文件編號))
-
 ```
 
+檢視有無 **重複值**
 ```{r}
+tbl_others %>% 
+    summarise(., n_unique = n_distinct(簽審核准許可文件編號))
+```
 
-# 檢視欄位內容格式
-
+檢視有無 **不符規則的格式**
+```{r}
 #   簽審編號
 pat_sn <- "IF[A-Z]0[0-9][A-Z0-9]{2}[0-9]{7}"    # length 1 atomic vector
 tbl_others %>% 
@@ -101,20 +115,26 @@ tbl_others %>%
 #   日期
 n_abn <- tbl_ori$受理日期 %>% as.Date() %>% is.na() %>% sum()
 tibble(n_abnormal = n_abn)
-
-rm(pat_sn, n_abn)
 ```
 
 ```{r}
+#| echo: false
+rm(pat_sn, n_abn)
+```
 
+欄位「受理日期」轉換格式（character -> date）
+```{r}
 tbl_others <- tbl_others %>% 
     mutate(受理日期 = as.Date(受理日期))
-
 ```
+
+
+
+
 
 ### main
 
-#### target
+#### 處理目標變數
 
 ```{r}
 
@@ -131,7 +151,7 @@ y <- tbl_ori$`批檢驗結果(除去標示因素)` %>%
 
 ```
 
-#### features
+#### 處理特徵
 
 ```{r}
 
@@ -160,6 +180,7 @@ tbl_X_g1 %>% summary()
 ```
 
 ```{r}
+#| echo: false
 # 嘗試迴圈寫法
 
 ```
@@ -235,7 +256,7 @@ tbl_X_g3 <- modify2(
 rm(cols_exc, tbl_ori_rest, ori_lev)
 ```
 
-#### combine
+#### 合併資料
 
 ```{r}
 
