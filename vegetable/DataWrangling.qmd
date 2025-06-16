@@ -8,7 +8,7 @@ format:
         toc-depth: 2
         toc-location: right
         toc-title: "On this page"
-        css: "DataWrangling_files/toc-style.css"
+        css: "css_toc/toc-style.css"
 ---
 
 
