@@ -8,7 +8,7 @@ format:
         toc-depth: 2
         toc-location: right
         toc-title: "On this page"
-        css: "css_toc/toc-style.css"
+        css: "css/style.css"
         df-print: paged
 ---
 
@@ -26,7 +26,7 @@ format:
 本程式檔執行內容如下：
 
 1. **Import**：引入資料，資料來源為BPI資料庫。本次測試主題為調整資料擷取期間與放入高風險特徵，故從資料庫擷取特徵篩選後的資料，以在資料前處理條件相同下進行後續建模比較。
-2. **Tidy & Transform**：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含空值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。
+2. **Tidy & Transform**：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含缺失值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。
 3. **Split**：切分訓練與測試集。設定不同資料期間、高風險特徵之訓練集，存成`.rda`，供後續建模使用。
 
 
@@ -42,7 +42,7 @@ format:
 library(tibble)
 library(dplyr)
 library(stringr)
-library(purrr)    # map, modify
+library(purrr)    # FP toolkit，以map()、modify()取代for-loop
 library(tidyr)    # handle missing values
 
 ```
@@ -320,7 +320,6 @@ lst_mdlData <- list(
     ), 
     test = list(`test` = tbl_test), 
     others = list(
-        `sn` = tbl_others, 
         `fName` = tbl_name2sym
     )
 )

@@ -135,7 +135,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>本程式檔執行內容如下：</p>
 <ol type="1">
 <li><strong>Import</strong>：引入資料，資料來源為BPI資料庫。本次測試主題為調整資料擷取期間與放入高風險特徵，故從資料庫擷取特徵篩選後的資料，以在資料前處理條件相同下進行後續建模比較。</li>
-<li><strong>Tidy &amp; Transform</strong>：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含空值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。</li>
+<li><strong>Tidy &amp; Transform</strong>：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含缺失值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。</li>
 <li><strong>Split</strong>：切分訓練與測試集。設定不同資料期間、高風險特徵之訓練集，存成<code>.rda</code>，供後續建模使用。</li>
 </ol>
 </section>

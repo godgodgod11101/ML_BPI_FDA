@@ -8,20 +8,24 @@ format:
         toc-depth: 2
         toc-location: right
         toc-title: "On this page"
-        css: "css_toc/toc-style.css"
+        css: "css/style.css"
 ---
+
+
+
+## Code Structure
+
+1. 資料清理（DataWrangling.qmd）
+2. **資料不平衡處理（HandlingImbData.qmd）**
 
 
 
 ## Introduction
 
-針對農產品類進口報單模型進行資料調整評估，包含：  
+本程式檔執行內容如下：
 
-* 調整資料擷取期間：參考農藥殘留法規變動時間點，擷取不同期間資料建模，評估是否能提升模型預測表現。
-* 放入高風險特徵：設計不同高風險特徵放入模型，評估是否能提升模型預測表現。
-
-
-
+1. Import：引入資料，資料已進行清理與切分。
+2. Handling Imbalanced Datasets：資料不平衡處理。
 
 
 
@@ -34,21 +38,34 @@ format:
 # tidyverse
 library(tibble)
 library(dplyr)
-library(purrr)    # map, modify
+library(purrr)    # FP toolkit，以map()、modify()取代for-loop
 
 ```
 
 
 
-## Data Import
+## Import
 
 ```{r}
 load(file = "data/vegetable_ds.rda")
 ```
 
+```{r}
+#| echo: false
+lst_mdlData %>% str(max.level = 2)
+```
+資料集說明如下：
+
+* train（訓練集）：
+    + all：擷取期間為[2011-01-01]{.date-blue}至[2018-12-31]{.date-blue}（基準組）
+    + 130101：擷取期間為[2013-01-01]{.date-blue}至[2018-12-31]{.date-blue}
+    + 140703：擷取期間為[2014-07-03]{.date-blue}至[2018-12-31]{.date-blue}
+* test（測試集）：[2019-01-01]{.date-orange}以後的資料
+* others（其他資訊）
 
 
-## Handling Imbalanced Datasets
+
+## Handle Imbalanced Datasets
 
 ```{r}
 

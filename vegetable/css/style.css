@@ -1,0 +1,36 @@
+
+/* toc title */
+nav#TOC h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* toc content */
+nav#TOC ul li a {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+/* toc right location */
+nav#TOC {
+    margin-top: 45px;
+    margin-left: 45px; 
+}
+
+/* text mark */
+.date-blue {
+  background-color: #f0f4ff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 500;
+  color: #1a3e75;
+}
+
+.date-orange {
+  background-color: #fff4e5;       /* 淡橘底 */
+  color: #c75000;                  /* 橘棕色字 */
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 500;
+}
