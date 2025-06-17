@@ -9,6 +9,7 @@ format:
         toc-location: right
         toc-title: "On this page"
         css: "css/style.css"
+        df-print: paged
 ---
 
 
@@ -31,6 +32,7 @@ format:
 
 ## Package
 
+引入所需套件
 ```{r}
 #| message: false
 #| warning: false
@@ -57,21 +59,20 @@ lst_mdlData %>% str(max.level = 2)
 資料集說明如下：
 
 * train（訓練集）：
-    + all：擷取期間為[2011-01-01]{.date-blue}至[2018-12-31]{.date-blue}（基準組）
-    + 130101：擷取期間為[2013-01-01]{.date-blue}至[2018-12-31]{.date-blue}
-    + 140703：擷取期間為[2014-07-03]{.date-blue}至[2018-12-31]{.date-blue}
-* test（測試集）：[2019-01-01]{.date-orange}以後的資料
+    + all：擷取期間為 [2011-01-01]{.date-blue} 至 [2018-12-31]{.date-blue} （基準組）
+    + 130101：擷取期間為 [2013-01-01]{.date-blue} 至 [2018-12-31]{.date-blue} 
+    + 140703：擷取期間為 [2014-07-03]{.date-blue} 至 [2018-12-31]{.date-blue} 
+* test（測試集）： [2019-01-01]{.date-orange} 以後的資料
 * others（其他資訊）
 
 
 
 ## Handle Imbalanced Datasets
 
+檢視各訓練集中，**目標（不合格報單）**占整體比例
 ```{r}
 
-# 目標（不合格報單）占整體比例
-
-#   function
+# function
 fail_ratio <- function(vec_y) {
     
     pf <- vec_y %>% summary()
@@ -87,7 +88,7 @@ fail_ratio <- function(vec_y) {
     return(rsl)
 }
 
-#   print
+# print
 bind_rows(
     fail_ratio(lst_mdlData[["train"]][["all"]]$Y), 
     fail_ratio(lst_mdlData[["train"]][["130101"]]$Y), 
@@ -97,19 +98,20 @@ bind_rows(
 
 ```
 
-### handling
-
+資料不平衡處理，使用 themis套件 搭配 recipes套件
 ```{r}
 #| message: false
 #| warning: false
 
 library(recipes)    # build feature engineering steps
-library(themis)    # dealing with unbalanced data
+library(themis)    # deal with unbalanced data
 
 ```
 
+先嘗試少數類別過採樣的方式（不合成新樣本），統一將少數類別樣本占整體比例調至30%
 ```{r}
 
+# function
 upsample_bake <- function(prep_train) {
     
     rec <- recipe(Y ~ ., data = lst_mdlData$train$all) %>% 
@@ -127,24 +129,34 @@ upsample_bake <- function(prep_train) {
     return(rsl)
 }
 
-a_rs <- upsample_bake(lst_mdlData$train$all)
-a130101_rs <- upsample_bake(lst_mdlData$train$`130101`)
-a140703_rs <- upsample_bake(lst_mdlData$train$`140703`)
+# execute
+train_upsample <- map(
+    .x = lst_mdlData$train, 
+    .f = upsample_bake
+)
 
 ```
 
+檢視處理結果
 ```{r}
 
 # 檢查處理後占比
 bind_rows(
-    fail_ratio(a_rs$Y), 
-    fail_ratio(a130101_rs$Y), 
-    fail_ratio(a140703_rs$Y)
+    fail_ratio(train_upsample$all$Y), 
+    fail_ratio(train_upsample$`130101`$Y), 
+    fail_ratio(train_upsample$`140703`$Y)
 )
 
 ```
 
 
+
+## Save
+
+```{r}
+lst_mdlData[["train_upsample"]] <- train_upsample
+# save(lst_mdlData, file = "data/vegetable_imb.rda")
+```
 
 
 
