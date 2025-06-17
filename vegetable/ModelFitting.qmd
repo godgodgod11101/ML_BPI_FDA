@@ -1,0 +1,96 @@
+---
+title: "BPI Model Improvement"
+author: "Jacky Wang"
+format:
+    html:
+        theme: cosmo
+        toc: true
+        toc-depth: 2
+        toc-location: right
+        toc-title: "On this page"
+        css: "css/style.css"
+        df-print: paged
+---
+
+## Code Structure
+
+1. 資料清理（DataWrangling.qmd）
+2. 資料不平衡處理（HandlingImbData.qmd）
+2. **模型配適（ModelFitting.qmd）**
+
+
+
+## Introduction
+
+本程式檔執行內容如下：
+
+1. Import：引入資料，資料已進行清理與切分。
+2. Handling Imbalanced Datasets：資料不平衡處理。
+
+
+
+## Package
+
+引入所需套件
+```{r}
+#| message: false
+#| warning: false
+
+# tidyverse
+library(tibble)
+library(dplyr)
+library(purrr)    # FP toolkit，以map()、modify()取代for-loop
+
+# tidymodels
+library(parsnip)
+
+```
+
+
+
+### Import
+
+```{r}
+load(file = "data/vegetable_imb.rda")
+```
+
+```{r}
+lst_mdlData$train_upsample %>% str(max.level = 1)
+```
+
+
+
+### Fit
+
+```{r}
+show_engines("boost_tree")
+```
+
+```{r}
+
+mdl_gbm <- boost_tree(
+    trees = 10, tree_depth = 5, learn_rate = 0.1
+) %>% 
+    set_engine("xgboost") %>% 
+    set_mode("classification") %>% 
+    translate()
+    
+
+mdl_gbm
+```
+
+```{r}
+
+mdl_gbm %>% 
+    fit(
+        object = ., 
+        formula = Y ~ ., 
+        data = lst_mdlData$train$all
+    )
+
+
+```
+
+
+
+
