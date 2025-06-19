@@ -76,8 +76,8 @@ lst_mdlData %>% str(max.level = 2)
 fail_ratio <- function(vec_y) {
     
     pf <- vec_y %>% summary()
-    n_fail <- pf[[2]]
-    n_pass <- pf[[1]]
+    n_fail <- pf[[1]]
+    n_pass <- pf[[2]]
     f_ratio <- n_fail / (n_fail+n_pass)
     
     f_ratio_ch <- round(f_ratio*100, digits = 2) %>% 

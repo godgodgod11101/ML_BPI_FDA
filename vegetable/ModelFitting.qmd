@@ -44,13 +44,13 @@ library(dplyr)
 library(purrr)    # FP toolkit，以map()、modify()取代for-loop
 
 # tidymodels
-library(parsnip)    # 模型配適套件
+library(parsnip)    # 配適模型的框架
 
 ```
 
 
 
-### Import
+### Import Data
 
 ```{r}
 load(file = "data/vegetable_imb.rda")
@@ -62,22 +62,37 @@ lst_mdlData$train_upsample %>% str(max.level = 1)
 
 
 
-### Fit
+### Fit Models
 
-#### Gradient Boosting
-
-檢視梯度提升樹可使用的引擎（用於配適模型的套件）
+檢視模型可使用的引擎（配適模型的套件）
 ```{r}
-show_engines("boost_tree")
+show_engines("naive_Bayes")
 ```
 
-使用 parsnip 預設的 xgboost 引擎
 ```{r}
 #| message: false
 #| warning: false
-library(xgboost)
+library(glmnet)    # Regularized Regression
+library(xgboost)    # Gradient Boosting
+library(klaR)    # Naive Bayes
+library(discrim)    # parsnip extension package, to fit NB
 ```
-[Installation Guide](https://xgboost.readthedocs.io/en/stable/install.html#r)
+[安裝xgboost](https://xgboost.readthedocs.io/en/stable/install.html#r)
+
+#### build
+
+```{r}
+
+```
+
+#### fit
+
+
+
+
+
+
+#### Gradient Boosting
 
 配合BPI模型設定，建構原始的梯度提升樹，不設定正規化參數
 ```{r}
@@ -107,7 +122,7 @@ mdl_gbm
 fit_gbm <- mdl_gbm %>% 
     fit(
         object = ., 
-        formula = Y ~ .,    # Y levels: Pass, Fail
+        formula = Y ~ .,    # Y levels: Fail, Pass
         data = lst_mdlData$train$all
     )
 
@@ -118,16 +133,84 @@ fit_gbm <- mdl_gbm %>%
 ```{r}
 
 # predict
-fit_gbm %>% 
-    predict.model_fit(
-        object = ., 
-        new_data = lst_mdlData$test$test, 
-        type = "raw"
-    )
+# fit_gbm %>% 
+#     predict.model_fit(
+#         object = ., 
+#         new_data = lst_mdlData$test$test, 
+#         type = "raw"
+#     )
+
+# fit_enet %>%
+#     predict.model_fit(
+#         object = .,
+#         new_data = lst_mdlData$test$test,
+#         type = "prob"
+#     ) %>% 
+#     {.[[1]]}
+
+# warning: false
+# fit_nb %>%
+#     predict.model_fit(
+#         object = .,
+#         new_data = lst_mdlData$test$test[1:10, ],
+#         type = "raw"
+#     )
 
 ```
 
 #### Elastic Net
+
+```{r}
+show_engines("logistic_reg")
+```
+
+```{r}
+#| message: false
+#| warning: false
+library(glmnet)
+```
+
+```{r}
+
+mdl_enet <- logistic_reg(penalty = 1e-4, mixture = 0.5) %>% 
+    set_engine(engine = "glmnet")
+
+fit_enet <- mdl_enet %>% 
+    fit(
+        object = ., 
+        formula = Y ~ .,    # Y levels: Fail, Pass
+        data = lst_mdlData$train$all
+    )
+
+
+
+```
+
+#### Naive Bayes
+
+```{r}
+show_engines("naive_Bayes")
+```
+
+```{r}
+#| message: false
+#| warning: false
+library(discrim)
+```
+
+```{r}
+
+mdl_nb <- naive_Bayes(Laplace = 1) %>% 
+    set_engine("klaR")
+
+fit_nb <- mdl_nb %>% 
+    fit(
+        object = ., 
+        formula = Y ~ .,    # Y levels: Fail, Pass
+        data = lst_mdlData$train$all
+    )
+
+```
 
 
 

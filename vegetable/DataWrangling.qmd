@@ -138,17 +138,14 @@ tbl_others <- tbl_others %>%
 
 ```{r}
 
-# tbl_ori$`批檢驗結果(除去標示因素)` %>% 
-#     factor(., levels = c("合格", "不合格")) %>% 
-#     summary()    # summary factor
-
 # target
 y <- tbl_ori$`批檢驗結果(除去標示因素)` %>% 
     factor(., 
-        levels = c("合格", "不合格"),    # 將預測目標放後
-        labels = c("Pass", "Fail")
+        levels = c("不合格", "合格"),    # 將預測目標放前，配合parsnip
+        labels = c("Fail", "Pass")
     )
 
+# y %>% summary()
 ```
 
 #### 處理特徵
@@ -161,7 +158,11 @@ tbl_X_g1 <- tbl_ori %>%
     mutate(
         across(    # 套用至多個欄位
             .cols = everything(),    # tidy-select
-            .fns = ~ factor(.x, levels = c("0", "1"), labels = c("no", "yes")), 
+            .fns = ~ factor(
+                .x, 
+                levels = c("0", "1"),    # dummy enc. 會將第一個level視為基準組
+                labels = c("no", "yes")
+            ), 
             .names = "{.col}_"    # 不改欄位名稱表示取代
         )
         , .keep = "none"    # 不保留原始資料
