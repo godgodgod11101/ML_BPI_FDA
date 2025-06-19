@@ -12,6 +12,8 @@ format:
         df-print: paged
 ---
 
+
+
 ## Code Structure
 
 1. 資料清理（DataWrangling.qmd）
@@ -42,7 +44,7 @@ library(dplyr)
 library(purrr)    # FP toolkit，以map()、modify()取代for-loop
 
 # tidymodels
-library(parsnip)
+library(parsnip)    # 模型配適套件
 
 ```
 
@@ -62,34 +64,74 @@ lst_mdlData$train_upsample %>% str(max.level = 1)
 
 ### Fit
 
+#### Gradient Boosting
+
+檢視梯度提升樹可使用的引擎（用於配適模型的套件）
 ```{r}
 show_engines("boost_tree")
 ```
 
+使用 parsnip 預設的 xgboost 引擎
+```{r}
+#| message: false
+#| warning: false
+library(xgboost)
+```
+[Installation Guide](https://xgboost.readthedocs.io/en/stable/install.html#r)
+
+配合BPI模型設定，建構原始的梯度提升樹，不設定正規化參數
 ```{r}
 
+# build
 mdl_gbm <- boost_tree(
-    trees = 10, tree_depth = 5, learn_rate = 0.1
+    trees = 10, tree_depth = 5, learn_rate = 0.1, 
+    sample_size = 1,    # 抽部分樣本
+    mtry = NULL    # 抽部分特徵
 ) %>% 
-    set_engine("xgboost") %>% 
-    set_mode("classification") %>% 
-    translate()
-    
+    set_engine(
+        engine = "xgboost", 
+        objective = "binary:logistic",    # 以log-odds計算偽殘差
+        reg_alpha = 0,    # L1正規化參數
+        reg_lambda = 0,    # L2正規化參數
+    ) %>% 
+    set_mode(mode = "classification")
 
 mdl_gbm
 ```
 
+以訓練集資料進行模型配適
 ```{r}
+#| warning: false
 
-mdl_gbm %>% 
+# fit
+fit_gbm <- mdl_gbm %>% 
     fit(
         object = ., 
-        formula = Y ~ ., 
+        formula = Y ~ .,    # Y levels: Pass, Fail
         data = lst_mdlData$train$all
     )
 
+# 考慮使用bonsai套件，但目前支援engine只有lightgbm、catboost。
+```
+
+測試集資料預測，輸出為預測目標機率
+```{r}
+
+# predict
+fit_gbm %>% 
+    predict.model_fit(
+        object = ., 
+        new_data = lst_mdlData$test$test, 
+        type = "raw"
+    )
 
 ```
+
+#### Elastic Net
+
+
+
+
 
 
 
