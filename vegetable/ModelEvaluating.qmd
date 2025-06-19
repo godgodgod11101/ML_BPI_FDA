@@ -1,0 +1,51 @@
+---
+title: "BPI Model Improvement"
+author: "Jacky Wang"
+format:
+    html:
+        theme: cosmo
+        toc: true
+        toc-depth: 2
+        toc-location: right
+        toc-title: "On this page"
+        css: "css/style.css"
+        df-print: paged
+---
+
+
+
+## Code Structure
+
+1. 資料清理（DataWrangling.qmd）
+2. 資料不平衡處理（HandlingImbData.qmd）
+2. **模型配適（ModelFitting.qmd）**
+
+
+
+## Introduction
+
+本程式檔執行內容如下：
+
+1. Import：引入資料，資料已進行清理與切分。
+2. Handling Imbalanced Datasets：資料不平衡處理。
+
+
+
+## Package
+
+引入所需套件
+```{r}
+#| message: false
+#| warning: false
+
+# tidyverse
+library(tibble)
+library(dplyr)
+library(purrr)    # FP toolkit，以map()、modify()取代for-loop
+
+# tidymodels
+
+```
+
+
+
