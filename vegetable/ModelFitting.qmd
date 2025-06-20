@@ -148,40 +148,4 @@ save(lst_fit, file = "data/vegetable_fit.rda")
 
 
 
-測試集資料預測，輸出為預測目標機率
-```{r}
-
-# predict
-# fit_gbm %>% 
-#     predict.model_fit(
-#         object = ., 
-#         new_data = lst_mdlData$test$test, 
-#         type = "raw"
-#     )
-
-# fit_enet %>%
-#     predict.model_fit(
-#         object = .,
-#         new_data = lst_mdlData$test$test,
-#         type = "prob"
-#     ) %>% 
-#     {.[[1]]}
-
-
-# fit_nb %>%
-#     predict.model_fit(
-#         object = .,
-#         new_data = lst_mdlData$test$test[1:10, ],
-#         type = "raw"
-#     )
-
-```
-
-
-
-
-
-
-
-
 

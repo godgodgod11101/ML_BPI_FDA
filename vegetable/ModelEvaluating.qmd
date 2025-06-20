@@ -44,8 +44,115 @@ library(dplyr)
 library(purrr)    # FP toolkit，以map()、modify()取代for-loop
 
 # tidymodels
+library(parsnip)
 
 ```
+
+
+
+## Import
+
+```{r}
+
+load("data/vegetable_fit.rda")
+load("data/vegetable_imb.rda")
+
+```
+
+
+
+## Predict
+
+```{r}
+
+# function
+ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres = .3) {
+    
+    # 各模型預測結果
+    lst_predprob <- map(
+        .x = lst_fitmdls, 
+        .f = \(x) {
+            predict.model_fit(
+                object = x, 
+                new_data = tbl_test, 
+                type = "prob"
+            ) %>% 
+                {.[[".pred_Fail"]]} %>% 
+                {ifelse(. > thres, 1, 0)}    # 考量調整閾值
+        } 
+    )
+    
+    # 投票法集成
+    votethres <- length(lst_fitmdls) / 2
+    predrsl_ensemble <- lst_predprob %>% 
+        pmap_int(.l = ., .f = sum) %>% 
+        {ifelse(.>votethres, "Fail", "Pass")} %>% 
+        factor(levels = c("Fail", "Pass"))
+    
+    return(predrsl_ensemble)
+}
+
+```
+
+```{r}
+#| message: false
+#| warning: false
+
+# execute
+predrsl_all <- ensemble_pred(lst_fit$all)
+predrsl_130101 <- ensemble_pred(lst_fit$`130101`)
+predrsl_140703 <- ensemble_pred(lst_fit$`140703`)
+
+```
+
+
+
+## Evaluate
+
+```{r}
+library(yardstick)
+library(ggplot2)
+```
+
+
+### confusion matrix
+
+```{r}
+
+tbl_truthpred <- tibble(
+    `truth` = lst_mdlData$test$test$Y, 
+    `pred_all` = predrsl_all, 
+    `pred_130101` = predrsl_130101, 
+    `pred_140703` = predrsl_140703
+)
+
+tbl_truthpred %>% 
+    conf_mat(truth = truth, estimate = pred_all) %>% 
+    autoplot(type = "heatmap")
+
+tbl_truthpred %>% 
+    conf_mat(truth = truth, estimate = pred_130101) %>% 
+    autoplot(type = "heatmap")
+
+tbl_truthpred %>% 
+    conf_mat(truth = truth, estimate = pred_140703) %>% 
+    autoplot(type = "heatmap")
+
+```
+
+### metrics
+
+```{r}
+
+bind_rows(
+    `all` = f_meas(data = tbl_truthpred, truth = truth, estimate = pred_all), 
+    `130101` = f_meas(data = tbl_truthpred, truth = truth, estimate = pred_130101), 
+    `140703` = f_meas(data = tbl_truthpred, truth = truth, estimate = pred_140703)
+)
+
+```
+
+
 
 
 
