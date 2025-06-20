@@ -90,7 +90,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#code-structure" id="toc-code-structure" class="nav-link active" data-scroll-target="#code-structure">Code Structure</a></li>
   <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#package" id="toc-package" class="nav-link" data-scroll-target="#package">Package</a></li>
-  <li><a href="#import" id="toc-import" class="nav-link" data-scroll-target="#import">Import</a></li>
+  <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">Import Data</a></li>
   <li><a href="#tidy-transform" id="toc-tidy-transform" class="nav-link" data-scroll-target="#tidy-transform">Tidy &amp; Transform</a></li>
   <li><a href="#split" id="toc-split" class="nav-link" data-scroll-target="#split">Split</a></li>
   </ul>
@@ -126,17 +126,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="code-structure" class="level2">
 <h2 class="anchored" data-anchor-id="code-structure">Code Structure</h2>
 <ol type="1">
-<li><strong>資料清理（DataWrangling.qmd）</strong></li>
-<li>資料不平衡處理（HandlingImbData.qmd）</li>
+<li><strong>資料整理</strong></li>
+<li><a href="https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html">資料不平衡處理</a></li>
+<li><a href="https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html">模型配適</a></li>
+<li><a href="https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html">模型評估</a></li>
 </ol>
 </section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>本程式檔執行內容如下：</p>
 <ol type="1">
-<li><strong>Import</strong>：引入資料，資料來源為BPI資料庫。本次測試主題為調整資料擷取期間與放入高風險特徵，故從資料庫擷取特徵篩選後的資料，以在資料前處理條件相同下進行後續建模比較。</li>
-<li><strong>Tidy &amp; Transform</strong>：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含缺失值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。</li>
-<li><strong>Split</strong>：切分訓練與測試集。設定不同資料期間、高風險特徵之訓練集，存成<code>.rda</code>，供後續建模使用。</li>
+<li><strong>Import</strong>：引入資料，資料來源為BPI資料庫，擷取特徵篩選後的資料，維持相同之資料前處理流程。</li>
+<li><strong>Tidy &amp; Transform</strong>：資料清理與轉換，以方便使用 <span class="pkg">tidymodels</span> 建模。</li>
+<li><strong>Split</strong>：切分訓練集與測試集，存成 <span class="var">.rda</span> ，供後續建模使用。</li>
 </ol>
 </section>
 <section id="package" class="level2">
@@ -151,8 +153,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)    <span class="co"># handle missing values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="import" class="level2">
-<h2 class="anchored" data-anchor-id="import">Import</h2>
+<section id="import-data" class="level2">
+<h2 class="anchored" data-anchor-id="import-data">Import Data</h2>
 <p>引入資料</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">"data/vegetable_ori.rda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -178,7 +180,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>資料清理與轉換</p>
 <section id="others" class="level3">
 <h3 class="anchored" data-anchor-id="others">others</h3>
-<p>將非用於建模之報單額外資訊另存於資料表 <code>tbl_others</code></p>
+<p>將非用於建模之報單額外資訊另存於 <span class="var">tbl_others</span> 資料表</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>tbl_others <span class="ot">&lt;-</span> tbl_ori <span class="sc">%&gt;%</span> </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(簽審核准許可文件編號, 報單項次, 受理日期)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -238,7 +240,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<p>欄位「受理日期」轉換格式（character -&gt; date）</p>
+<p>欄位「受理日期」轉換成 date 型別</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>tbl_others <span class="ot">&lt;-</span> tbl_others <span class="sc">%&gt;%</span> </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(受理日期 <span class="ot">=</span> <span class="fu">as.Date</span>(受理日期))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -246,8 +248,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="main" class="level3">
 <h3 class="anchored" data-anchor-id="main">main</h3>
-<section id="處理目標變數" class="level4">
-<h4 class="anchored" data-anchor-id="處理目標變數">處理目標變數</h4>
+<section id="handle-target" class="level4">
+<h4 class="anchored" data-anchor-id="handle-target">handle target</h4>
+<ol type="1">
+<li>目標變數轉換成 factor 型別，同時去掉中文類別名稱</li>
+<li>預測目標放第一個位置，配合 <span class="pkg">tidymodels</span></li>
+</ol>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># target</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> tbl_ori<span class="sc">$</span><span class="st">`</span><span class="at">批檢驗結果(除去標示因素)</span><span class="st">`</span> <span class="sc">%&gt;%</span> </span>
@@ -259,10 +265,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># y %&gt;% summary()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="處理特徵" class="level4">
-<h4 class="anchored" data-anchor-id="處理特徵">處理特徵</h4>
+<section id="handle-features" class="level4">
+<h4 class="anchored" data-anchor-id="handle-features">handle features</h4>
+<ol type="1">
+<li>特徵轉換成 factor 型別（BPI模型資料皆為類別變數），同時去掉中文類別名稱</li>
+<li>除去「無…」類別（如無相關資料）</li>
+</ol>
+<p>處理高風險特徵</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 黑名單特徵</span></span>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 特徵型別轉換</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>tbl_X_g1 <span class="ot">&lt;-</span> tbl_ori <span class="sc">%&gt;%</span> </span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">contains</span>(<span class="st">"黑名單"</span>)) <span class="sc">%&gt;%</span> </span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
@@ -286,96 +297,88 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="co"># 檢視轉換結果</span></span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>tbl_X_g1 <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> 黑名單產品(75%) 黑名單號列(75%) 黑名單生產國(75%) 黑名單號列(avg)
- no :22624       no :17405       no :21173         no :16974      
- yes: 1541       yes: 6760       yes: 2992         yes: 7191      
- 黑名單進口商(75%)
- no :19226        
- yes: 4939        </code></pre>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="co"># tbl_X_g1 %&gt;% summary()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>處理含「無…」類別特徵</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 尋找含「無...」類別特徵</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   已處理欄位名稱</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>cols_exc <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">names</span>(tbl_others), <span class="st">"批檢驗結果(除去標示因素)"</span>) </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   取出含「無...」level特徵之名稱</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>pick_naCols <span class="ot">&lt;-</span> tbl_ori <span class="sc">%&gt;%</span> </span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 排除已處理欄位</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>(<span class="fu">all_of</span>(cols_exc) <span class="sc">|</span> <span class="fu">contains</span>(<span class="st">"黑名單"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 特徵轉factor取levels</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(<span class="at">.x =</span> ., <span class="at">.f =</span> \(x) <span class="fu">levels</span>(<span class="fu">as.factor</span>(x))) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 檢測含「無...」level特徵</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map_lgl</span>(., \(x) <span class="fu">any</span>(<span class="fu">str_detect</span>(x, <span class="st">"無"</span>))) </span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>cols_na <span class="ot">&lt;-</span> <span class="fu">names</span>(pick_naCols)[pick_naCols]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 尋找含缺失值（無...）特徵</span></span>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 利用factor()重設levels，去除「無...」類別</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   已處理欄位名稱</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>cols_exc <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">names</span>(tbl_others), <span class="st">"批檢驗結果(除去標示因素)"</span>) </span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   取出含缺失值特徵名稱</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>pick_naCols <span class="ot">&lt;-</span> tbl_ori <span class="sc">%&gt;%</span> </span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>(<span class="fu">all_of</span>(cols_exc) <span class="sc">|</span> <span class="fu">contains</span>(<span class="st">"黑名單"</span>))) <span class="sc">%&gt;%</span>    <span class="co"># 排除已處理欄位</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(<span class="at">.x =</span> ., <span class="at">.f =</span> \(x) <span class="fu">levels</span>(<span class="fu">as.factor</span>(x))) <span class="sc">%&gt;%</span>    <span class="co"># 特徵轉factor取levels</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map_lgl</span>(., \(x) <span class="fu">any</span>(<span class="fu">str_detect</span>(x, <span class="st">"無"</span>)))    <span class="co"># 檢測含「無...」level特徵</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>cols_na <span class="ot">&lt;-</span> <span class="fu">names</span>(pick_naCols)[pick_naCols]</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(cols_exc, pick_naCols)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># map(.x, .f, )</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># df（包含tbl）為list，可直接當作參數</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># \(x) anonymous function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 含「無...」類別特徵之levels</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>ori_lev <span class="ot">&lt;-</span> tbl_ori[cols_na] <span class="sc">%&gt;%</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(\(x) <span class="fu">unique</span>(x))</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 取出「無...」以外之levels</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>pick_lev <span class="ot">&lt;-</span> ori_lev <span class="sc">%&gt;%</span> </span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(\(x) <span class="sc">!</span><span class="fu">str_detect</span>(x, <span class="st">"無"</span>))</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>new_lev <span class="ot">&lt;-</span> <span class="fu">map2</span>(</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> ori_lev, <span class="at">.y =</span> pick_lev, </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> \(x, y) x[y]</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 特徵型別轉換</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>tbl_X_g2<span class="ot">&lt;-</span> <span class="fu">modify2</span>(</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> tbl_ori[cols_na], <span class="at">.y =</span> new_lev, </span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> \(x, y) <span class="fu">factor</span>(x, <span class="at">levels =</span> y, <span class="at">labels =</span> <span class="fu">seq_along</span>(y))</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co"># modify: returns the same type as the input object</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 利用factor()重設levels參數，將「無...」轉為&lt;NA&gt;</span></span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 其餘特徵重設levels</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   含缺失值特徵levels</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>ori_lev <span class="ot">&lt;-</span> tbl_ori[cols_na] <span class="sc">%&gt;%</span> </span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(\(x) <span class="fu">unique</span>(x))</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   排除「無...」level</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>pick_lev <span class="ot">&lt;-</span> ori_lev <span class="sc">%&gt;%</span> </span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(\(x) <span class="sc">!</span><span class="fu">str_detect</span>(x, <span class="st">"無"</span>))</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>new_lev <span class="ot">&lt;-</span> <span class="fu">map2</span>(</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> ori_lev, <span class="at">.y =</span> pick_lev, </span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> \(x, y) x[y]</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="co">#   含缺失值特徵</span></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>tbl_X_g2<span class="ot">&lt;-</span> <span class="fu">modify2</span>(</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> tbl_ori[cols_na], <span class="at">.y =</span> new_lev, </span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> \(x, y) <span class="fu">factor</span>(x, <span class="at">levels =</span> y, <span class="at">labels =</span> <span class="fu">seq_along</span>(y))</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(cols_na, ori_lev, pick_lev, new_lev)</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="co"># modify: returns the same type as the input object</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 其餘特徵重設levels</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   排除已處理欄位</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>cols_exc <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">names</span>(tbl_others), <span class="st">"批檢驗結果(除去標示因素)"</span>, <span class="fu">names</span>(tbl_X_g2))</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>tbl_ori_rest <span class="ot">&lt;-</span> tbl_ori <span class="sc">%&gt;%</span> </span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>(<span class="fu">all_of</span>(cols_exc) <span class="sc">|</span> <span class="fu">contains</span>(<span class="st">"黑名單"</span>)))</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   重設levels（1, 2, 3, ...）</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>ori_lev <span class="ot">&lt;-</span> tbl_ori_rest <span class="sc">%&gt;%</span> </span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(\(x) {<span class="fu">as.character</span>(x) <span class="sc">%&gt;%</span> <span class="fu">unique</span>() <span class="sc">%&gt;%</span> <span class="fu">sort</span>()})</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>tbl_X_g3 <span class="ot">&lt;-</span> <span class="fu">modify2</span>(</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    tbl_ori_rest, ori_lev, </span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    \(x, y) <span class="fu">factor</span>(x, <span class="at">levels =</span> y, <span class="at">labels =</span> <span class="fu">seq_along</span>(y))</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(cols_exc, tbl_ori_rest, ori_lev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   排除已處理欄位</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>cols_exc <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">names</span>(tbl_others), <span class="st">"批檢驗結果(除去標示因素)"</span>, <span class="fu">names</span>(tbl_X_g2))</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>tbl_ori_rest <span class="ot">&lt;-</span> tbl_ori <span class="sc">%&gt;%</span> </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>(<span class="fu">all_of</span>(cols_exc) <span class="sc">|</span> <span class="fu">contains</span>(<span class="st">"黑名單"</span>)))</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   重設levels（1, 2, 3, ...）</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>ori_lev <span class="ot">&lt;-</span> tbl_ori_rest <span class="sc">%&gt;%</span> </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(\(x) {<span class="fu">as.character</span>(x) <span class="sc">%&gt;%</span> <span class="fu">unique</span>() <span class="sc">%&gt;%</span> <span class="fu">sort</span>()})</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>tbl_X_g3 <span class="ot">&lt;-</span> <span class="fu">modify2</span>(</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    tbl_ori_rest, ori_lev, </span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    \(x, y) <span class="fu">factor</span>(x, <span class="at">levels =</span> y, <span class="at">labels =</span> <span class="fu">seq_along</span>(y))</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(cols_exc, tbl_ori_rest, ori_lev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="合併資料" class="level4">
 <h4 class="anchored" data-anchor-id="合併資料">合併資料</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>tbl_wra <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Date</span><span class="st">`</span> <span class="ot">=</span> tbl_others<span class="sc">$</span>受理日期, </span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Y</span><span class="st">`</span> <span class="ot">=</span> y</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    ), </span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    tbl_X_g1, tbl_X_g2, tbl_X_g3</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">drop_na</span>()    <span class="co"># 暫不嘗試補值</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>tbl_wra <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Date</span><span class="st">`</span> <span class="ot">=</span> tbl_others<span class="sc">$</span>受理日期, </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">Y</span><span class="st">`</span> <span class="ot">=</span> y</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    tbl_X_g1, tbl_X_g2, tbl_X_g3</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">drop_na</span>()    <span class="co"># 暫不嘗試補值</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -383,53 +386,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="split" class="level2">
 <h2 class="anchored" data-anchor-id="split">Split</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 特徵名稱轉代號</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>tbl_name2sym <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">C Names</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">names</span>(tbl_wra[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]), </span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">C Symbols</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">"X_"</span>, <span class="fu">seq_along</span>(tbl_wra[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]))</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(tbl_wra)[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)] <span class="ot">&lt;-</span> tbl_name2sym<span class="sc">$</span><span class="st">`</span><span class="at">C Symbols</span><span class="st">`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 特徵名稱轉代號</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>tbl_name2sym <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">C Names</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">names</span>(tbl_wra[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]), </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">C Symbols</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">"X_"</span>, <span class="fu">seq_along</span>(tbl_wra[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(tbl_wra)[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)] <span class="ot">&lt;-</span> tbl_name2sym<span class="sc">$</span><span class="st">`</span><span class="at">C Symbols</span><span class="st">`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="to-.rda" class="level3">
 <h3 class="anchored" data-anchor-id="to-.rda">to .rda</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>tbl_wra_sub <span class="ot">&lt;-</span> tbl_wra[<span class="fu">c</span>(T, T, <span class="sc">!</span><span class="fu">str_detect</span>(tbl_name2sym<span class="sc">$</span><span class="st">`</span><span class="at">C Names</span><span class="st">`</span>, <span class="st">"黑名單"</span>))]</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>tbl_train <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>tbl_train_130101 <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2013-01-01"</span>) <span class="sc">&amp;</span> Date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>tbl_train_140703 <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2014-07-03"</span>) <span class="sc">&amp;</span> Date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>tbl_test <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 組成 list</span></span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>lst_mdlData <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">train =</span> <span class="fu">list</span>(</span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">all</span><span class="st">`</span> <span class="ot">=</span> tbl_train, </span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">130101</span><span class="st">`</span> <span class="ot">=</span> tbl_train_130101, </span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">140703</span><span class="st">`</span> <span class="ot">=</span> tbl_train_140703</span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    ), </span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">test =</span> <span class="fu">list</span>(<span class="st">`</span><span class="at">test</span><span class="st">`</span> <span class="ot">=</span> tbl_test), </span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">others =</span> <span class="fu">list</span>(</span>
-<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">fName</span><span class="st">`</span> <span class="ot">=</span> tbl_name2sym</span>
-<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(tbl_wra_sub, tbl_train, tbl_train_130101, tbl_train_140703, tbl_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tbl_wra_sub <span class="ot">&lt;-</span> tbl_wra[<span class="fu">c</span>(T, T, <span class="sc">!</span><span class="fu">str_detect</span>(tbl_name2sym<span class="sc">$</span><span class="st">`</span><span class="at">C Names</span><span class="st">`</span>, <span class="st">"黑名單"</span>))]</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>tbl_train <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>tbl_train_130101 <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2013-01-01"</span>) <span class="sc">&amp;</span> Date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>tbl_train_140703 <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2014-07-03"</span>) <span class="sc">&amp;</span> Date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>tbl_test <span class="ot">&lt;-</span> tbl_wra_sub <span class="sc">%&gt;%</span> </span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2019-01-01"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>Date)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 組成 list</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>lst_mdlData <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">train =</span> <span class="fu">list</span>(</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">all</span><span class="st">`</span> <span class="ot">=</span> tbl_train, </span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">130101</span><span class="st">`</span> <span class="ot">=</span> tbl_train_130101, </span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">140703</span><span class="st">`</span> <span class="ot">=</span> tbl_train_140703</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">test =</span> <span class="fu">list</span>(<span class="st">`</span><span class="at">test</span><span class="st">`</span> <span class="ot">=</span> tbl_test), </span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">others =</span> <span class="fu">list</span>(</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">`</span><span class="at">fName</span><span class="st">`</span> <span class="ot">=</span> tbl_name2sym</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(tbl_wra_sub, tbl_train, tbl_train_130101, tbl_train_140703, tbl_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save(lst_mdlData, file = "data/vegetable_ds.rda")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save(lst_mdlData, file = "data/vegetable_ds.rda")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>

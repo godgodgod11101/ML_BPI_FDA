@@ -16,8 +16,10 @@ format:
 
 ## Code Structure
 
-1. **資料清理（DataWrangling.qmd）**
-2. 資料不平衡處理（HandlingImbData.qmd）
+1. **資料整理**
+2. [資料不平衡處理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html)
+3. [模型配適](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html)
+4. [模型評估](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html)
 
 
 
@@ -25,9 +27,9 @@ format:
 
 本程式檔執行內容如下：
 
-1. **Import**：引入資料，資料來源為BPI資料庫。本次測試主題為調整資料擷取期間與放入高風險特徵，故從資料庫擷取特徵篩選後的資料，以在資料前處理條件相同下進行後續建模比較。
-2. **Tidy & Transform**：資料清理與轉換。由於模型資料皆為類別變數，故將所有變數轉換為factor型別，同時排除含缺失值類別（如無相關資料）之樣本。另外，考量後續建模相容性，中文類別名稱會由代號取代。
-3. **Split**：切分訓練與測試集。設定不同資料期間、高風險特徵之訓練集，存成`.rda`，供後續建模使用。
+1. **Import**：引入資料，資料來源為BPI資料庫，擷取特徵篩選後的資料，維持相同之資料前處理流程。
+2. **Tidy & Transform**：資料清理與轉換，以方便使用 [tidymodels]{.pkg} 建模。
+3. **Split**：切分訓練集與測試集，存成 [.rda]{.var} ，供後續建模使用。
 
 
 
@@ -49,7 +51,7 @@ library(tidyr)    # handle missing values
 
 
 
-## Import
+## Import Data
 
 引入資料
 ```{r}
@@ -80,7 +82,7 @@ tbl_ori[c(1:4, 15)] %>%
 
 ### others
 
-將非用於建模之報單額外資訊另存於資料表 `tbl_others`
+將非用於建模之報單額外資訊另存於 [tbl_others]{.var} 資料表
 ```{r}
 tbl_others <- tbl_ori %>% 
     select(簽審核准許可文件編號, 報單項次, 受理日期)
@@ -122,20 +124,18 @@ tibble(n_abnormal = n_abn)
 rm(pat_sn, n_abn)
 ```
 
-欄位「受理日期」轉換格式（character -> date）
+欄位「受理日期」轉換成 date 型別
 ```{r}
 tbl_others <- tbl_others %>% 
     mutate(受理日期 = as.Date(受理日期))
 ```
 
-
-
-
-
 ### main
 
-#### 處理目標變數
+#### handle target
 
+1. 目標變數轉換成 factor 型別，同時去掉中文類別名稱
+2. 預測目標放第一個位置，配合 [tidymodels]{.pkg}
 ```{r}
 
 # target
@@ -148,11 +148,15 @@ y <- tbl_ori$`批檢驗結果(除去標示因素)` %>%
 # y %>% summary()
 ```
 
-#### 處理特徵
+#### handle features
 
+1. 特徵轉換成 factor 型別（BPI模型資料皆為類別變數），同時去掉中文類別名稱
+2. 除去「無...」類別（如無相關資料）
+
+處理高風險特徵
 ```{r}
 
-# 黑名單特徵
+# 特徵型別轉換
 tbl_X_g1 <- tbl_ori %>% 
     select(contains("黑名單")) %>% 
     mutate(
@@ -176,7 +180,7 @@ tbl_X_g1 <- tbl_ori %>%
     )
 
 # 檢視轉換結果
-tbl_X_g1 %>% summary()
+# tbl_X_g1 %>% summary()
 
 ```
 
@@ -186,36 +190,44 @@ tbl_X_g1 %>% summary()
 
 ```
 
+處理含「無...」類別特徵
 ```{r}
 
-# 尋找含缺失值（無...）特徵
+# 尋找含「無...」類別特徵
 
 #   已處理欄位名稱
 cols_exc <- c(names(tbl_others), "批檢驗結果(除去標示因素)") 
 
-#   取出含缺失值特徵名稱
+#   取出含「無...」level特徵之名稱
 pick_naCols <- tbl_ori %>% 
-    select(!(all_of(cols_exc) | contains("黑名單"))) %>%    # 排除已處理欄位
-    map(.x = ., .f = \(x) levels(as.factor(x))) %>%    # 特徵轉factor取levels
-    map_lgl(., \(x) any(str_detect(x, "無")))    # 檢測含「無...」level特徵
+    
+    # 排除已處理欄位
+    select(!(all_of(cols_exc) | contains("黑名單"))) %>% 
+    
+    # 特徵轉factor取levels
+    map(.x = ., .f = \(x) levels(as.factor(x))) %>% 
+    
+    # 檢測含「無...」level特徵
+    map_lgl(., \(x) any(str_detect(x, "無"))) 
 
 cols_na <- names(pick_naCols)[pick_naCols]
 
+```
+
+```{r}
+#| echo: false
 rm(cols_exc, pick_naCols)
-# map(.x, .f, )
-    # df（包含tbl）為list，可直接當作參數
-    # \(x) anonymous function
 ```
 
 ```{r}
 
-# 利用factor()重設levels參數，將「無...」轉為<NA>
+# 利用factor()重設levels，去除「無...」類別
 
-#   含缺失值特徵levels
+# 含「無...」類別特徵之levels
 ori_lev <- tbl_ori[cols_na] %>% 
     map(\(x) unique(x))
 
-#   排除「無...」level
+# 取出「無...」以外之levels
 pick_lev <- ori_lev %>% 
     map(\(x) !str_detect(x, "無"))
 
@@ -224,16 +236,23 @@ new_lev <- map2(
     .f = \(x, y) x[y]
 )
 
-#   含缺失值特徵
+# 特徵型別轉換
 tbl_X_g2<- modify2(
     .x = tbl_ori[cols_na], .y = new_lev, 
     .f = \(x, y) factor(x, levels = y, labels = seq_along(y))
 )
 
-
-rm(cols_na, ori_lev, pick_lev, new_lev)
 # modify: returns the same type as the input object
 ```
+
+```{r}
+#| echo: false
+rm(cols_na, ori_lev, pick_lev, new_lev)
+```
+
+
+
+
 
 ```{r}
 

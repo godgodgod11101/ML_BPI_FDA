@@ -19,17 +19,34 @@ nav#TOC {
 }
 
 /* text mark */
+.pkg {
+  background-color: #f2f2f2;    /* 淡灰底 */
+  color: #333333;    /* 深灰文字 */
+  font-family: monospace;    /* 等寬字體，強調技術感 */
+  font-size: 0.95em;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.var {
+  color: #005b96;    /* 藍灰色，低調又有科技感 */
+  font-family: monospace;
+  font-size: 0.95em;
+  font-weight: 500;
+}
+
 .date-blue {
   background-color: #f0f4ff;
+  color: #1a3e75;
   padding: 2px 4px;
   border-radius: 4px;
   font-weight: 500;
-  color: #1a3e75;
+  
 }
 
 .date-orange {
-  background-color: #fff4e5;       /* 淡橘底 */
-  color: #c75000;                  /* 橘棕色字 */
+  background-color: #fff4e5;    /* 淡橘底 */
+  color: #c75000;    /* 橘棕色字 */
   padding: 2px 4px;
   border-radius: 4px;
   font-weight: 500;
