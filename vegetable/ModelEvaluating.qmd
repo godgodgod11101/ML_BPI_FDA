@@ -53,10 +53,9 @@ library(parsnip)
 ## Import
 
 ```{r}
-
-load("data/vegetable_fit.rda")
+#| message: false
 load("data/vegetable_imb.rda")
-
+load("data/vegetable_fit.rda")
 ```
 
 
@@ -66,7 +65,7 @@ load("data/vegetable_imb.rda")
 ```{r}
 
 # function
-ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres = .3) {
+ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres = .5) {
     
     # 各模型預測結果
     lst_predprob <- map(
@@ -77,8 +76,8 @@ ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres =
                 new_data = tbl_test, 
                 type = "prob"
             ) %>% 
-                {.[[".pred_Fail"]]} %>% 
-                {ifelse(. > thres, 1, 0)}    # 考量調整閾值
+                {.[[".pred_Fail"]]} %>%    # ROC curve 需預測機率
+                {ifelse(. > thres, 1, 0)}    # 可考量調整閾值
         } 
     )
     
@@ -99,9 +98,12 @@ ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres =
 #| warning: false
 
 # execute
-predrsl_all <- ensemble_pred(lst_fit$all)
-predrsl_130101 <- ensemble_pred(lst_fit$`130101`)
-predrsl_140703 <- ensemble_pred(lst_fit$`140703`)
+tbl_truthpred <- tibble(
+    `Truth` = lst_mdlData$test$test$Y, 
+    `Model_Benchmark` = ensemble_pred(lst_fit$all), 
+    `Model_130101` = ensemble_pred(lst_fit$`130101`), 
+    `Model_140703` = ensemble_pred(lst_fit$`140703`)
+)
 
 ```
 
@@ -112,31 +114,44 @@ predrsl_140703 <- ensemble_pred(lst_fit$`140703`)
 ```{r}
 library(yardstick)
 library(ggplot2)
+library(patchwork)    # 多圖合併呈現
+library(tidyr)    # reshape data
 ```
-
 
 ### confusion matrix
 
 ```{r}
 
-tbl_truthpred <- tibble(
-    `truth` = lst_mdlData$test$test$Y, 
-    `pred_all` = predrsl_all, 
-    `pred_130101` = predrsl_130101, 
-    `pred_140703` = predrsl_140703
-)
+# function
+plot_cfmx <- function(tbl_truthpred) {
+    
+    truth_col <- names(tbl_truthpred)[1]
+    pred_cols <- names(tbl_truthpred)[c(-1)]    # 取2至最後
+    
+    plots_cfmx <- map(
+        .x = pred_cols,    # atomic vector
+        .f = \(x) {
+            conf_mat(
+                data = tbl_truthpred, 
+                truth = all_of(truth_col),    # data-masking contexts is deprecated
+                estimate = all_of(x)
+            ) %>% 
+            autoplot(type = "heatmap") + ggtitle(x)
+        }
+    )
+    
+    names(plots_cfmx) <- pred_cols
+    
+    return(plots_cfmx)
+}
 
-tbl_truthpred %>% 
-    conf_mat(truth = truth, estimate = pred_all) %>% 
-    autoplot(type = "heatmap")
+# execute
+plots_cfmx <- plot_cfmx(tbl_truthpred)
 
-tbl_truthpred %>% 
-    conf_mat(truth = truth, estimate = pred_130101) %>% 
-    autoplot(type = "heatmap")
+# layout
+plots_cfmx$Model_Benchmark | 
+    (plots_cfmx$Model_130101 / plots_cfmx$Model_140703)
 
-tbl_truthpred %>% 
-    conf_mat(truth = truth, estimate = pred_140703) %>% 
-    autoplot(type = "heatmap")
 
 ```
 
@@ -144,13 +159,41 @@ tbl_truthpred %>%
 
 ```{r}
 
-bind_rows(
-    `all` = f_meas(data = tbl_truthpred, truth = truth, estimate = pred_all), 
-    `130101` = f_meas(data = tbl_truthpred, truth = truth, estimate = pred_130101), 
-    `140703` = f_meas(data = tbl_truthpred, truth = truth, estimate = pred_140703)
-)
+# function
+
+#   combine metric function
+multi_metric <- metric_set(f_meas, precision, recall)
+
+#   use new function and tabulate
+tabulate_metrics <- function(tbl_truthpred, func = multi_metric) {
+    
+    truth_col <- names(tbl_truthpred)[1]
+    pred_cols <- names(tbl_truthpred)[c(-1)]    # 取2至最後
+    
+    tbl_estimates <- map(
+        .x = pred_cols, 
+        .f = \(x) func(
+            data = tbl_truthpred, 
+            truth = all_of(truth_col), 
+            estimate = all_of(x)
+        ) %>% 
+            select(c(".metric", ".estimate")) %>% 
+            add_column(`.model` = x, .before = 1)
+    ) %>% 
+        bind_rows() %>% 
+        pivot_wider(names_from = ".metric", values_from = ".estimate")
+    
+    return(tbl_estimates)
+}
+
+# execute
+tabulate_metrics(tbl_truthpred)
 
 ```
+
+
+
+
 
 
 
