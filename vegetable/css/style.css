@@ -19,7 +19,7 @@ nav#TOC {
 }
 
 /* text mark */
-.pkg {
+.obj {
   background-color: #f2f2f2;    /* 淡灰底 */
   color: #333333;    /* 深灰文字 */
   font-family: monospace;    /* 等寬字體，強調技術感 */
@@ -28,11 +28,8 @@ nav#TOC {
   border-radius: 3px;
 }
 
-.var {
-  color: #005b96;    /* 藍灰色，低調又有科技感 */
-  font-family: monospace;
-  font-size: 0.95em;
-  font-weight: 500;
+.hl {
+  color: #cc6600;
 }
 
 .date-blue {
