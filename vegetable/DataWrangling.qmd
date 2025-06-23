@@ -60,10 +60,9 @@ load(file = "data/vegetable_ori.rda")
 
 ```{r}
 #| echo: false
-cat("資料維度：", dim(tbl_ori)[[1]], "obs. of", dim(tbl_ori)[[2]], "variables")
+cat(dim(tbl_ori)[[1]], "obs. of", dim(tbl_ori)[[2]], "variables")
 ```
 
-顯示部分資料內容
 ```{r}
 #| echo: false
 tbl_ori[c(1:4, 15)] %>% 
@@ -132,7 +131,7 @@ tbl_others <- tbl_others %>%
 
 ### main
 
-#### handle target (!顯示處理結果)
+#### handle target
 
 1. 目標變數轉換成 [factor]{.obj} 型別，同時[去掉中文類別名稱]{.hl}
 2. [預測目標放第一個位置]{.hl}（配合 [tidymodels]{.obj} ）
@@ -145,6 +144,11 @@ y <- tbl_ori$`批檢驗結果(除去標示因素)` %>%
         labels = c("Fail", "Pass")
     )
 
+```
+
+```{r}
+#| echo: false
+y %>% head()
 # y %>% summary()
 ```
 
@@ -179,7 +183,12 @@ tbl_X_g1 <- tbl_ori %>%
          `黑名單進口商(75%)` = `黑名單進口商_`,
     )
 
-# 檢視轉換結果
+```
+
+```{r}
+#| echo: false
+cat(dim(tbl_X_g1)[[2]], "variables")
+tbl_X_g1 %>% head()
 # tbl_X_g1 %>% summary()
 ```
 
@@ -209,6 +218,7 @@ cols_na <- names(pick_naCols)[pick_naCols]
 
 ```{r}
 #| echo: false
+cat("含「無...」類別特徵：", cols_na)
 rm(cols_exc, pick_naCols)
 ```
 
@@ -239,6 +249,8 @@ tbl_X_g2<- modify2(
 
 ```{r}
 #| echo: false
+cat(dim(tbl_X_g2)[[2]], "variables")
+tbl_X_g2 %>% head(10)
 rm(cols_na, ori_lev, pick_lev, new_lev)
 ```
 
@@ -264,6 +276,8 @@ tbl_X_g3 <- modify2(
 
 ```{r}
 #| echo: false
+cat(dim(tbl_X_g3)[[2]], "variables")
+tbl_X_g3[c(1:7)] %>% head()
 rm(cols_exc, tbl_ori_rest, ori_lev)
 ```
 
@@ -284,6 +298,8 @@ tbl_wra <- bind_cols(
 
 ```{r}
 #| echo: false
+cat(dim(tbl_wra)[[1]], "obs. of", dim(tbl_wra)[[2]], "variables")
+tbl_wra[c(1:7)] %>% head()
 rm(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)
 ```
 
@@ -291,7 +307,7 @@ rm(y, tbl_X_g1, tbl_X_g2, tbl_X_g3)
 
 ## Split Data
 
-先[將特徵名稱轉成代號]{.hl}，預防後續建模因特殊欄位名稱造成錯誤
+先將[特徵名稱轉成代號]{.hl}，預防後續建模因特殊欄位名稱造成錯誤
 ```{r}
 
 # 建立欄位名稱對照表
@@ -304,6 +320,16 @@ tbl_name2sym <- tibble(
 names(tbl_wra)[-c(1:2)] <- tbl_name2sym$`C Symbols`
 
 ```
+
+```{r}
+#| echo: false
+cat(dim(tbl_wra)[[1]], "obs. of", dim(tbl_wra)[[2]], "variables")
+tbl_wra[c(1:7)] %>% head()
+```
+
+
+
+
 
 資料擷取期間調整評估使用資料如下：
 
