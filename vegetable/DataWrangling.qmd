@@ -387,14 +387,9 @@ rm(tbl_wra_sub, tbl_train, tbl_train_130101, tbl_train_140703, tbl_test)
 ```
 
 ```{r}
-#| eval: false
-
-fname <- c("tra", "tes", "oth")
-map2(
-    .x = fname, .y = list(lst_train, lst_test, lst_others), 
-    .f = \(x, y) save(y, file = glue("data/vegetable_{x}.rda"))
-)
-
+# save(lst_train, file = "data/vegetable_tra.rda")
+# save(lst_test, file = "data/vegetable_tes.rda")
+# save(lst_others, file = "data/vegetable_oth.rda")
 ```
 
 

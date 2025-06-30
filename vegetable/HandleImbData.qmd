@@ -16,17 +16,19 @@ format:
 
 ## Code Structure
 
-1. 資料清理（DataWrangling.qmd）
-2. **資料不平衡處理（HandlingImbData.qmd）**
+1. [資料整理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/DataWrangling.html)
+2. **資料不平衡處理（本頁內容）**
+3. [模型配適](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html)
+4. [模型評估](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html)
 
 
 
 ## Introduction
 
-本程式檔執行內容如下：
+本程式檔進行資料不平衡處理，執行內容說明如下：
 
-1. Import：引入資料，資料已進行清理與切分。
-2. Handling Imbalanced Datasets：資料不平衡處理。
+1. Import Data：引入訓練集資料做處理。
+2. Handle Imbalanced：進行資料不平衡處理。
 
 
 
@@ -46,30 +48,27 @@ library(purrr)    # FP toolkit，以map()、modify()取代for-loop
 
 
 
-## Import
+## Import Data
 
+引入資料
 ```{r}
-load(file = "data/vegetable_ds.rda")
+load(file = "data/vegetable_tra.rda")
 ```
 
 ```{r}
 #| echo: false
-lst_mdlData %>% str(max.level = 2)
+lst_train %>% str(max.level = 1)
 ```
-資料集說明如下：
 
-* train（訓練集）：
-    + all：擷取期間為 [2011-01-01]{.date-blue} 至 [2018-12-31]{.date-blue} （基準組）
-    + 130101：擷取期間為 [2013-01-01]{.date-blue} 至 [2018-12-31]{.date-blue} 
-    + 140703：擷取期間為 [2014-07-03]{.date-blue} 至 [2018-12-31]{.date-blue} 
-* test（測試集）： [2019-01-01]{.date-orange} 以後的資料
-* others（其他資訊）
+* [資料擷取期間調整]{.hl}評估使用訓練集資料：
+  + [all]{.obj} ：擷取 2011-01-01 至 2018-12-31 資料（同BPI模型）
+  + [130101]{.obj} ：擷取 [2013-01-01]{.hl} 至 2018-12-31 資料（農藥檢驗項目調整至[252項]{.hl}）
+  + [140703]{.obj} ：擷取 [2014-07-03]{.hl} 至 2018-12-31 資料（農藥檢驗項目調整至[311項]{.hl}）
 
 
+## Handle Imbalanced
 
-## Handle Imbalanced Datasets
-
-檢視各訓練集中，**目標（不合格報單）**占整體比例
+檢視各訓練集中，[目標（不合格報單）]{.hl}占整體比例
 ```{r}
 
 # function
@@ -90,15 +89,14 @@ fail_ratio <- function(vec_y) {
 
 # print
 bind_rows(
-    fail_ratio(lst_mdlData[["train"]][["all"]]$Y), 
-    fail_ratio(lst_mdlData[["train"]][["130101"]]$Y), 
-    fail_ratio(lst_mdlData[["train"]][["140703"]]$Y)
+    fail_ratio(lst_train[["all"]]$Y), 
+    fail_ratio(lst_train[["130101"]]$Y), 
+    fail_ratio(lst_train[["140703"]]$Y)
 )
-# [[]] 與 $ （取元素）用法相同，不同於 [] （保留外層結構）
 
 ```
 
-資料不平衡處理，使用 themis套件 搭配 recipes套件
+使用 [themis]{.obj} 進行資料不平衡處理，搭配 [recipes]{.obj} 建構處理流程
 ```{r}
 #| message: false
 #| warning: false
@@ -108,16 +106,16 @@ library(themis)    # deal with unbalanced data
 
 ```
 
-先嘗試少數類別過採樣的方式（不合成新樣本），統一將少數類別樣本占整體比例調至30%
+統一使用[少數類別過採樣]{.hl}的方式（不合成新樣本），將少數類別樣本占整體比例調至[30%]{.hl}
 ```{r}
 
 # function
 upsample_bake <- function(prep_train) {
     
-    rec <- recipe(Y ~ ., data = lst_mdlData$train$all) %>% 
+    rec <- recipe(Y ~ ., data = lst_train$all) %>% 
         # 定義資料結構的資料集（定義formula、儲存欄位型別）
         
-        step_upsample(Y, over_ratio = 3/7) %>%
+        step_upsample(Y, over_ratio = 3/7, skip = TRUE) %>%
         # skip=TRUE (default): 若bake()中new_data非NULL，此步驟會跳過（表示只用於訓練集）
         
         prep(training = prep_train)
@@ -130,8 +128,8 @@ upsample_bake <- function(prep_train) {
 }
 
 # execute
-train_upsample <- map(
-    .x = lst_mdlData$train, 
+lst_train_upsam <- map(
+    .x = lst_train, 
     .f = upsample_bake
 )
 
@@ -139,14 +137,11 @@ train_upsample <- map(
 
 檢視處理結果
 ```{r}
-
-# 檢查處理後占比
 bind_rows(
-    fail_ratio(train_upsample$all$Y), 
-    fail_ratio(train_upsample$`130101`$Y), 
-    fail_ratio(train_upsample$`140703`$Y)
+    fail_ratio(lst_train_upsam$all$Y), 
+    fail_ratio(lst_train_upsam$`130101`$Y), 
+    fail_ratio(lst_train_upsam$`140703`$Y)
 )
-
 ```
 
 
@@ -154,11 +149,8 @@ bind_rows(
 ## Save
 
 ```{r}
-lst_mdlData[["train_upsample"]] <- train_upsample
-# save(lst_mdlData, file = "data/vegetable_imb.rda")
+# save(lst_train_upsam, file = "data/vegetable_tra_imb.rda")
 ```
-
-
 
 
 

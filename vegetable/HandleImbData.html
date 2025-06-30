@@ -90,8 +90,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#code-structure" id="toc-code-structure" class="nav-link active" data-scroll-target="#code-structure">Code Structure</a></li>
   <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#package" id="toc-package" class="nav-link" data-scroll-target="#package">Package</a></li>
-  <li><a href="#import" id="toc-import" class="nav-link" data-scroll-target="#import">Import</a></li>
-  <li><a href="#handle-imbalanced-datasets" id="toc-handle-imbalanced-datasets" class="nav-link" data-scroll-target="#handle-imbalanced-datasets">Handle Imbalanced Datasets</a></li>
+  <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">Import Data</a></li>
+  <li><a href="#handle-imbalanced" id="toc-handle-imbalanced" class="nav-link" data-scroll-target="#handle-imbalanced">Handle Imbalanced</a></li>
   <li><a href="#save" id="toc-save" class="nav-link" data-scroll-target="#save">Save</a></li>
   </ul>
 </nav>
@@ -126,16 +126,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="code-structure" class="level2">
 <h2 class="anchored" data-anchor-id="code-structure">Code Structure</h2>
 <ol type="1">
-<li>資料清理（DataWrangling.qmd）</li>
-<li><strong>資料不平衡處理（HandlingImbData.qmd）</strong></li>
+<li><a href="https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/DataWrangling.html">資料整理</a></li>
+<li><strong>資料不平衡處理（本頁內容）</strong></li>
+<li><a href="https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html">模型配適</a></li>
+<li><a href="https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html">模型評估</a></li>
 </ol>
 </section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>本程式檔執行內容如下：</p>
+<p>本程式檔進行資料不平衡處理，執行內容說明如下：</p>
 <ol type="1">
-<li>Import：引入資料，資料已進行清理與切分。</li>
-<li>Handling Imbalanced Datasets：資料不平衡處理。</li>
+<li>Import Data：引入訓練集資料做處理。</li>
+<li>Handle Imbalanced：進行資料不平衡處理。</li>
 </ol>
 </section>
 <section id="package" class="level2">
@@ -148,46 +150,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)    <span class="co"># FP toolkit，以map()、modify()取代for-loop</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="import" class="level2">
-<h2 class="anchored" data-anchor-id="import">Import</h2>
+<section id="import-data" class="level2">
+<h2 class="anchored" data-anchor-id="import-data">Import Data</h2>
+<p>引入資料</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">"data/vegetable_ds.rda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">"data/vegetable_tra.rda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 3
- $ train :List of 3
-  ..$ all   : tibble [17,546 × 63] (S3: tbl_df/tbl/data.frame)
-  ..$ 130101: tibble [15,755 × 63] (S3: tbl_df/tbl/data.frame)
-  ..$ 140703: tibble [14,089 × 63] (S3: tbl_df/tbl/data.frame)
- $ test  :List of 1
-  ..$ test: tibble [5,149 × 63] (S3: tbl_df/tbl/data.frame)
- $ others:List of 1
-  ..$ fName: tibble [67 × 2] (S3: tbl_df/tbl/data.frame)</code></pre>
+ $ all   : tibble [17,546 × 63] (S3: tbl_df/tbl/data.frame)
+ $ 130101: tibble [15,755 × 63] (S3: tbl_df/tbl/data.frame)
+ $ 140703: tibble [14,089 × 63] (S3: tbl_df/tbl/data.frame)</code></pre>
 </div>
 </div>
-<p>資料集說明如下：</p>
 <ul>
-<li>train（訓練集）：
+<li><span class="hl">資料擷取期間調整</span>評估使用訓練集資料：
 <ul>
-<li>all：擷取期間為 <span class="date-blue">2011-01-01</span> 至 <span class="date-blue">2018-12-31</span> （基準組）</li>
-<li>130101：擷取期間為 <span class="date-blue">2013-01-01</span> 至 <span class="date-blue">2018-12-31</span></li>
-<li>140703：擷取期間為 <span class="date-blue">2014-07-03</span> 至 <span class="date-blue">2018-12-31</span></li>
+<li><span class="obj">all</span> ：擷取 2011-01-01 至 2018-12-31 資料（同BPI模型）</li>
+<li><span class="obj">130101</span> ：擷取 <span class="hl">2013-01-01</span> 至 2018-12-31 資料（農藥檢驗項目調整至<span class="hl">252項</span>）</li>
+<li><span class="obj">140703</span> ：擷取 <span class="hl">2014-07-03</span> 至 2018-12-31 資料（農藥檢驗項目調整至<span class="hl">311項</span>）</li>
 </ul></li>
-<li>test（測試集）： <span class="date-orange">2019-01-01</span> 以後的資料</li>
-<li>others（其他資訊）</li>
 </ul>
 </section>
-<section id="handle-imbalanced-datasets" class="level2">
-<h2 class="anchored" data-anchor-id="handle-imbalanced-datasets">Handle Imbalanced Datasets</h2>
-<p>檢視各訓練集中，<strong>目標（不合格報單）</strong>占整體比例</p>
+<section id="handle-imbalanced" class="level2">
+<h2 class="anchored" data-anchor-id="handle-imbalanced">Handle Imbalanced</h2>
+<p>檢視各訓練集中，<span class="hl">目標（不合格報單）</span>占整體比例</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fail_ratio <span class="ot">&lt;-</span> <span class="cf">function</span>(vec_y) {</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    pf <span class="ot">&lt;-</span> vec_y <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    n_fail <span class="ot">&lt;-</span> pf[[<span class="dv">2</span>]]</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    n_pass <span class="ot">&lt;-</span> pf[[<span class="dv">1</span>]]</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    n_fail <span class="ot">&lt;-</span> pf[[<span class="dv">1</span>]]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    n_pass <span class="ot">&lt;-</span> pf[[<span class="dv">2</span>]]</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    f_ratio <span class="ot">&lt;-</span> n_fail <span class="sc">/</span> (n_fail<span class="sc">+</span>n_pass)</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    f_ratio_ch <span class="ot">&lt;-</span> <span class="fu">round</span>(f_ratio<span class="sc">*</span><span class="dv">100</span>, <span class="at">digits =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span> </span>
@@ -200,9 +195,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># print</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_mdlData[[<span class="st">"train"</span>]][[<span class="st">"all"</span>]]<span class="sc">$</span>Y), </span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_mdlData[[<span class="st">"train"</span>]][[<span class="st">"130101"</span>]]<span class="sc">$</span>Y), </span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_mdlData[[<span class="st">"train"</span>]][[<span class="st">"140703"</span>]]<span class="sc">$</span>Y)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_train[[<span class="st">"all"</span>]]<span class="sc">$</span>Y), </span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_train[[<span class="st">"130101"</span>]]<span class="sc">$</span>Y), </span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_train[[<span class="st">"140703"</span>]]<span class="sc">$</span>Y)</span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -211,47 +206,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [[]] 與 $ （取元素）用法相同，不同於 [] （保留外層結構）</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>資料不平衡處理，使用 themis套件 搭配 recipes套件</p>
+<p>使用 <span class="obj">themis</span> 進行資料不平衡處理，搭配 <span class="obj">recipes</span> 建構處理流程</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recipes)    <span class="co"># build feature engineering steps</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(themis)    <span class="co"># deal with unbalanced data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recipes)    <span class="co"># build feature engineering steps</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(themis)    <span class="co"># deal with unbalanced data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>先嘗試少數類別過採樣的方式（不合成新樣本），統一將少數類別樣本占整體比例調至30%</p>
+<p>統一使用<span class="hl">少數類別過採樣</span>的方式（不合成新樣本），將少數類別樣本占整體比例調至<span class="hl">30%</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>upsample_bake <span class="ot">&lt;-</span> <span class="cf">function</span>(prep_train) {</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(Y <span class="sc">~</span> ., <span class="at">data =</span> lst_mdlData<span class="sc">$</span>train<span class="sc">$</span>all) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 定義資料結構的資料集（定義formula、儲存欄位型別）</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">step_upsample</span>(Y, <span class="at">over_ratio =</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">7</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># skip=TRUE (default): 若bake()中new_data非NULL，此步驟會跳過（表示只用於訓練集）</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">prep</span>(<span class="at">training =</span> prep_train)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 配適的資料集（後續會根據此資料集的少數類別樣本做過採樣）</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    rsl <span class="ot">&lt;-</span> <span class="fu">bake</span>(rec, <span class="at">new_data =</span> <span class="cn">NULL</span>) </span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 處理的資料集（NULL表示直接作用於配適的資料集）</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(rsl)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># execute</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>train_upsample <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> lst_mdlData<span class="sc">$</span>train, </span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> upsample_bake</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>upsample_bake <span class="ot">&lt;-</span> <span class="cf">function</span>(prep_train) {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(Y <span class="sc">~</span> ., <span class="at">data =</span> lst_train<span class="sc">$</span>all) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 定義資料結構的資料集（定義formula、儲存欄位型別）</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">step_upsample</span>(Y, <span class="at">over_ratio =</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">7</span>, <span class="at">skip =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># skip=TRUE (default): 若bake()中new_data非NULL，此步驟會跳過（表示只用於訓練集）</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">prep</span>(<span class="at">training =</span> prep_train)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 配適的資料集（後續會根據此資料集的少數類別樣本做過採樣）</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    rsl <span class="ot">&lt;-</span> <span class="fu">bake</span>(rec, <span class="at">new_data =</span> <span class="cn">NULL</span>) </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 處理的資料集（NULL表示直接作用於配適的資料集）</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(rsl)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="co"># execute</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>lst_train_upsam <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> lst_train, </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> upsample_bake</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>檢視處理結果</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 檢查處理後占比</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(train_upsample<span class="sc">$</span>all<span class="sc">$</span>Y), </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(train_upsample<span class="sc">$</span><span class="st">`</span><span class="at">130101</span><span class="st">`</span><span class="sc">$</span>Y), </span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(train_upsample<span class="sc">$</span><span class="st">`</span><span class="at">140703</span><span class="st">`</span><span class="sc">$</span>Y)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_train_upsam<span class="sc">$</span>all<span class="sc">$</span>Y), </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_train_upsam<span class="sc">$</span><span class="st">`</span><span class="at">130101</span><span class="st">`</span><span class="sc">$</span>Y), </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fail_ratio</span>(lst_train_upsam<span class="sc">$</span><span class="st">`</span><span class="at">140703</span><span class="st">`</span><span class="sc">$</span>Y)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -264,8 +257,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="save" class="level2">
 <h2 class="anchored" data-anchor-id="save">Save</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>lst_mdlData[[<span class="st">"train_upsample"</span>]] <span class="ot">&lt;-</span> train_upsample</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># save(lst_mdlData, file = "data/vegetable_imb.rda")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save(lst_train_upsam, file = "data/vegetable_tra_imb.rda")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 
