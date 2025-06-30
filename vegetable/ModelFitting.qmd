@@ -16,18 +16,19 @@ format:
 
 ## Code Structure
 
-1. 資料清理（DataWrangling.qmd）
-2. 資料不平衡處理（HandlingImbData.qmd）
-2. **模型配適（ModelFitting.qmd）**
+1. [資料整理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/DataWrangling.html)
+2. [資料不平衡處理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html)
+3. **模型配適（本頁內容）**
+4. [模型評估](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html)
 
 
 
 ## Introduction
 
-本程式檔執行內容如下：
+本程式檔進行模型配適，執行內容說明如下：
 
-1. Import：引入資料，資料已進行清理與切分。
-2. Handling Imbalanced Datasets：資料不平衡處理。
+1. Import Data：引入不平衡處理後訓練集資料進行模型配適。
+2. Fit Models to Data：進行模型配適。
 
 
 
@@ -53,36 +54,48 @@ library(parsnip)    # 配適模型的框架
 ## Import Data
 
 ```{r}
-load(file = "data/vegetable_imb.rda")
+load(file = "data/vegetable_tra_imb.rda")
 ```
 
 ```{r}
-lst_mdlData$train_upsample %>% str(max.level = 1)
+lst_train_upsam %>% str(max.level = 1)
 ```
+
+* [資料擷取期間調整]{.hl}評估使用訓練集資料（已做不平衡處理）：
+  + [all]{.obj} ：擷取 2011-01-01 至 2018-12-31 資料（同BPI模型）
+  + [130101]{.obj} ：擷取 [2013-01-01]{.hl} 至 2018-12-31 資料（農藥檢驗項目調整至[252項]{.hl}）
+  + [140703]{.obj} ：擷取 [2014-07-03]{.hl} 至 2018-12-31 資料（農藥檢驗項目調整至[311項]{.hl}）
 
 
 
 ## Fit Models to Data
 
-檢視模型可使用的引擎（配適模型的套件）
+檢視模型框架可使用的引擎（實際配適資料的模型套件）
 ```{r}
-show_engines("boost_tree")
-# "logistic_reg", "naive_Bayes"
+show_engines("boost_tree")    # "logistic_reg", "naive_Bayes"
 ```
 
 ```{r}
 #| message: false
 #| warning: false
-library(glmnet)    # Regularized Regression
-library(xgboost)    # Gradient Boosting
-library(klaR)    # Naive Bayes
+
+# Regularized Regression
+library(glmnet)
+
+# Gradient Boosting
+library(xgboost)    # 參考安裝指南
+
+# Naive Bayes
+library(klaR)
 library(discrim)    # parsnip extension package, to fit NB
+
 ```
+
 [安裝xgboost](https://xgboost.readthedocs.io/en/stable/install.html#r)
 
 ### build
 
-配合BPI模型設定
+配合BPI模型選擇特定方法做集成（投票法），方法包含正規化羅吉斯迴歸、梯度提升決策樹、樸素貝氏
 ```{r}
 
 lst_mdl <- list()    # 存放模型
@@ -113,7 +126,7 @@ lst_mdl[["nb"]] <- naive_Bayes(Laplace = 1) %>%
 
 ### fit
 
-將模型配適於訓練集資料
+將各模型配適於訓練集資料
 ```{r}
 #| warning: false
 
@@ -131,9 +144,9 @@ fit_mdls <- function(tbl_train) {
 
 # execute
 lst_fit <- list()    # 存放已配適資料的模型
-lst_fit[["all"]] <- fit_mdls(lst_mdlData$train_upsample$all)
-lst_fit[["130101"]] <- fit_mdls(lst_mdlData$train_upsample$`130101`)
-lst_fit[["140703"]] <- fit_mdls(lst_mdlData$train_upsample$`140703`)
+lst_fit[["all"]] <- fit_mdls(lst_train_upsam$all)
+lst_fit[["130101"]] <- fit_mdls(lst_train_upsam$`130101`)
+lst_fit[["140703"]] <- fit_mdls(lst_train_upsam$`140703`)
 
 ```
 
@@ -142,7 +155,7 @@ lst_fit[["140703"]] <- fit_mdls(lst_mdlData$train_upsample$`140703`)
 ## Save
 
 ```{r}
-save(lst_fit, file = "data/vegetable_fit.rda")
+# save(lst_fit, file = "data/vegetable_fit.rda")
 ```
 
 
