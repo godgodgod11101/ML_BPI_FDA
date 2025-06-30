@@ -16,7 +16,7 @@ format:
 
 ## Code Structure
 
-1. **資料整理**
+1. **資料整理（本頁內容）**
 2. [資料不平衡處理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html)
 3. [模型配適](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html)
 4. [模型評估](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html)
@@ -25,11 +25,11 @@ format:
 
 ## Introduction
 
-本程式檔執行內容如下：
+本程式檔進行資料整理，執行內容說明如下：
 
-1. Import：引入資料，資料來源為BPI資料庫，擷取特徵篩選後的資料，維持相同之資料前處理流程。
+1. Import Data：引入資料，資料來源為BPI資料庫，擷取特徵篩選後的資料，維持相同之資料前處理流程。
 2. Tidy & Transform：資料清理與轉換，方便後續使用 [tidymodels]{.obj} 建模。
-3. Split：切分訓練集與測試集，存成 [.rda]{.obj} ，供後續建模使用。
+3. Split Data：切分訓練集與測試集，存成 [.rda]{.obj} ，供後續建模使用。
 
 
 
@@ -44,6 +44,7 @@ format:
 library(tibble)
 library(dplyr)
 library(stringr)
+library(glue)
 library(purrr)    # FP toolkit, use map(), modify() instead of for-loop
 library(tidyr)    # handle missing values
 
@@ -154,7 +155,7 @@ y %>% head()
 
 #### handle features
 
-1. 特徵轉換成 [factor]{.obj} 型別（BPI模型資料皆為類別變數），同[時去掉中文類別名稱]{.hl}
+1. 特徵轉換成 [factor]{.obj} 型別（BPI模型資料皆為類別變數），同時[去掉中文類別名稱]{.hl}
 2. 除去「無...」類別（如無相關資料）
 
 處理高風險特徵
@@ -212,7 +213,7 @@ pick_naCols <- tbl_ori %>%
     # 檢測含「無...」level特徵
     map_lgl(., \(x) any(str_detect(x, "無"))) 
 
-cols_na <- names(pick_naCols)[pick_naCols]
+cols_na <- names(pick_naCols)[pick_naCols]    # named vector
 
 ```
 
@@ -327,20 +328,21 @@ cat(dim(tbl_wra)[[1]], "obs. of", dim(tbl_wra)[[2]], "variables")
 tbl_wra[c(1:7)] %>% head()
 ```
 
-
-
-
-
 資料擷取期間調整評估使用資料如下：
 
-1. [tbl_train]{.obj} ：擷取 2011-01-01 至 2018-12-31 資料（同BPI模型）
-2. [tbl_train_130101]{.obj} ：擷取 2013-01-01 至 2018-12-31 資料（農藥檢驗項目調整至252項）
-3. [tbl_train_140703]{.obj} ：擷取 2014-07-03 至 2018-12-31 資料（農藥檢驗項目調整至311項）
+* 訓練集資料：
+  + [tbl_train]{.obj} ：擷取 2011-01-01 至 2018-12-31 資料（同BPI模型）
+  + [tbl_train_130101]{.obj} ：擷取 [2013-01-01]{.hl} 至 2018-12-31 資料（農藥檢驗項目調整至[252項]{.hl}）
+  + [tbl_train_140703]{.obj} ：擷取 [2014-07-03]{.hl} 至 2018-12-31 資料（農藥檢驗項目調整至[311項]{.hl}）
+* 測試集資料：
+  + [tbl_test]{.obj} ：2019-01-01 以後資料
 
 ```{r}
 
+# 不使用高風險特徵
 tbl_wra_sub <- tbl_wra[c(T, T, !str_detect(tbl_name2sym$`C Names`, "黑名單"))]
 
+# 訓練集
 tbl_train <- tbl_wra_sub %>% 
     filter(Date < as.Date("2019-01-01")) %>% 
     select(!Date)
@@ -353,37 +355,46 @@ tbl_train_140703 <- tbl_wra_sub %>%
     filter(Date >= as.Date("2014-07-03") & Date < as.Date("2019-01-01")) %>% 
     select(!Date)
 
+# 測試集
 tbl_test <- tbl_wra_sub %>% 
     filter(Date >= as.Date("2019-01-01")) %>% 
     select(!Date)
 
 ```
 
+放入高風險特徵評估使用資料如下：
+
 
 
 ## Save 
 
+整理成 [list]{.obj}
 ```{r}
 
-# 組成 list
-lst_mdlData <- list(
-    train = list(
-        `all` = tbl_train, 
-        `130101` = tbl_train_130101, 
-        `140703` = tbl_train_140703
-    ), 
-    test = list(`test` = tbl_test), 
-    others = list(
-        `fName` = tbl_name2sym
-    )
+lst_train <- list(
+    `all` = tbl_train, 
+    `130101` = tbl_train_130101, 
+    `140703` = tbl_train_140703
 )
+lst_test <- list(`test` = tbl_test)
+lst_others <- list(`fName` = tbl_name2sym)
 
+```
 
+```{r}
+#| echo: false
 rm(tbl_wra_sub, tbl_train, tbl_train_130101, tbl_train_140703, tbl_test)
 ```
 
 ```{r}
-# save(lst_mdlData, file = "data/vegetable_ds.rda")
+#| eval: false
+
+fname <- c("tra", "tes", "oth")
+map2(
+    .x = fname, .y = list(lst_train, lst_test, lst_others), 
+    .f = \(x, y) save(y, file = glue("data/vegetable_{x}.rda"))
+)
+
 ```
 
 
