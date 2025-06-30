@@ -32,19 +32,3 @@ nav#TOC {
   color: #cc6600;
 }
 
-.date-blue {
-  background-color: #f0f4ff;
-  color: #1a3e75;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-weight: 500;
-  
-}
-
-.date-orange {
-  background-color: #fff4e5;    /* 淡橘底 */
-  color: #c75000;    /* 橘棕色字 */
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-weight: 500;
-}

@@ -220,7 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(Y <span class="sc">~</span> ., <span class="at">data =</span> lst_train<span class="sc">$</span>all) <span class="sc">%&gt;%</span> </span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 定義資料結構的資料集（定義formula、儲存欄位型別）</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">step_upsample</span>(Y, <span class="at">over_ratio =</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">7</span>, <span class="at">skip =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">step_upsample</span>(Y, <span class="at">over_ratio =</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">7</span>, , <span class="at">seed =</span> <span class="dv">630</span>, <span class="at">skip =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># skip=TRUE (default): 若bake()中new_data非NULL，此步驟會跳過（表示只用於訓練集）</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">prep</span>(<span class="at">training =</span> prep_train)</span>

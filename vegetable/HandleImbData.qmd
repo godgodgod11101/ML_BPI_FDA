@@ -115,7 +115,7 @@ upsample_bake <- function(prep_train) {
     rec <- recipe(Y ~ ., data = lst_train$all) %>% 
         # 定義資料結構的資料集（定義formula、儲存欄位型別）
         
-        step_upsample(Y, over_ratio = 3/7, skip = TRUE) %>%
+        step_upsample(Y, over_ratio = 3/7, , seed = 630, skip = TRUE) %>%
         # skip=TRUE (default): 若bake()中new_data非NULL，此步驟會跳過（表示只用於訓練集）
         
         prep(training = prep_train)

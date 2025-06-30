@@ -138,7 +138,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>本程式檔進行資料整理，執行內容說明如下：</p>
 <ol type="1">
 <li>Import Data：引入資料，資料來源為BPI資料庫，擷取特徵篩選後的資料，維持相同之資料前處理流程。</li>
-<li>Tidy &amp; Transform：資料清理與轉換，方便後續使用 <span class="obj">tidymodels</span> 建模。</li>
+<li>Tidy &amp; Transform：資料清理與轉換，方便後續使用 <span class="obj">tidymodels</span> 套件建模。</li>
 <li>Split Data：切分訓練集與測試集，存成 <span class="obj">.rda</span> ，供後續建模使用。</li>
 </ol>
 </section>
@@ -178,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="tidy-transform" class="level2">
 <h2 class="anchored" data-anchor-id="tidy-transform">Tidy &amp; Transform</h2>
-<p>將原始資料進行清理與型別轉換，方便後續使用 <span class="obj">tidymodels</span> 建模。</p>
+<p>將原始資料進行清理與型別轉換，方便後續使用 <span class="obj">tidymodels</span> 套件建模。</p>
 <section id="others" class="level3">
 <h3 class="anchored" data-anchor-id="others">others</h3>
 <p>將非用於建模之報單額外資訊另存於 <span class="obj">tbl_others</span> 資料表</p>
@@ -253,7 +253,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="handle-target">handle target</h4>
 <ol type="1">
 <li>目標變數轉換成 <span class="obj">factor</span> 型別，同時<span class="hl">去掉中文類別名稱</span></li>
-<li><span class="hl">預測目標放第一個位置</span>（配合 <span class="obj">tidymodels</span> ）</li>
+<li><span class="hl">預測目標放第一個位置</span>（配合 <span class="obj">tidymodels</span> 套件）</li>
 </ol>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># target</span></span>

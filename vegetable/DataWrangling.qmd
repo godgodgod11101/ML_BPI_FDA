@@ -28,7 +28,7 @@ format:
 本程式檔進行資料整理，執行內容說明如下：
 
 1. Import Data：引入資料，資料來源為BPI資料庫，擷取特徵篩選後的資料，維持相同之資料前處理流程。
-2. Tidy & Transform：資料清理與轉換，方便後續使用 [tidymodels]{.obj} 建模。
+2. Tidy & Transform：資料清理與轉換，方便後續使用 [tidymodels]{.obj} 套件建模。
 3. Split Data：切分訓練集與測試集，存成 [.rda]{.obj} ，供後續建模使用。
 
 
@@ -78,7 +78,7 @@ tbl_ori[c(1:4, 15)] %>%
 
 ## Tidy & Transform
 
-將原始資料進行清理與型別轉換，方便後續使用 [tidymodels]{.obj} 建模。
+將原始資料進行清理與型別轉換，方便後續使用 [tidymodels]{.obj} 套件建模。
 
 ### others
 
@@ -135,7 +135,7 @@ tbl_others <- tbl_others %>%
 #### handle target
 
 1. 目標變數轉換成 [factor]{.obj} 型別，同時[去掉中文類別名稱]{.hl}
-2. [預測目標放第一個位置]{.hl}（配合 [tidymodels]{.obj} ）
+2. [預測目標放第一個位置]{.hl}（配合 [tidymodels]{.obj} 套件）
 ```{r}
 
 # target

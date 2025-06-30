@@ -16,9 +16,10 @@ format:
 
 ## Code Structure
 
-1. 資料清理（DataWrangling.qmd）
-2. 資料不平衡處理（HandlingImbData.qmd）
-2. **模型配適（ModelFitting.qmd）**
+1. [資料整理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/DataWrangling.html)
+2. [資料不平衡處理](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html)
+3. [模型配適](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html)
+4. **模型評估（本頁內容）**
 
 
 
@@ -26,8 +27,9 @@ format:
 
 本程式檔執行內容如下：
 
-1. Import：引入資料，資料已進行清理與切分。
-2. Handling Imbalanced Datasets：資料不平衡處理。
+1. Import：引入已配適資料的模型。
+2. Predict：以集成方法預測測試集樣本結果（是否為不合格報單）。
+3. Evaluate：評估集成模型表現，採用BPI模型年度更新主要觀察指標 [F-measure]{.obj} 做衡量。
 
 
 
@@ -42,20 +44,26 @@ format:
 library(tibble)
 library(dplyr)
 library(purrr)    # FP toolkit，以map()、modify()取代for-loop
+library(tidyr)    # reshape data
 
 # tidymodels
-library(parsnip)
+library(parsnip)    # predict
+library(yardstick)    # estimate model performance
+
+# ggplot2
+library(ggplot2)
+library(patchwork)    # combine separate ggplots into the same graphic
 
 ```
 
 
 
-## Import
+## Import Models
 
 ```{r}
 #| message: false
-load("data/vegetable_imb.rda")
 load("data/vegetable_fit.rda")
+load("data/vegetable_tes.rda")
 ```
 
 
@@ -63,27 +71,34 @@ load("data/vegetable_fit.rda")
 ## Predict
 
 ```{r}
+#| echo: false
+
+# 藉由 ROC curve 調整模型閾值
+```
+
+以[投票法]{.hl}集成各模型預測結果，模型閾值先設定為 0.5
+```{r}
 
 # function
-ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres = .5) {
+ensemble_pred <- function(lst_fit, tbl_test = lst_test$test, thres = .5) {
     
     # 各模型預測結果
-    lst_predprob <- map(
-        .x = lst_fitmdls, 
+    lst_predrsl <- map(
+        .x = lst_fit, 
         .f = \(x) {
             predict.model_fit(
                 object = x, 
                 new_data = tbl_test, 
                 type = "prob"
             ) %>% 
-                {.[[".pred_Fail"]]} %>%    # ROC curve 需預測機率
-                {ifelse(. > thres, 1, 0)}    # 可考量調整閾值
+                {.[[".pred_Fail"]]} %>% 
+                {ifelse(. > thres, 1, 0)}
         } 
     )
     
     # 投票法集成
-    votethres <- length(lst_fitmdls) / 2
-    predrsl_ensemble <- lst_predprob %>% 
+    votethres <- length(lst_fit) / 2
+    predrsl_ensemble <- lst_predrsl %>% 
         pmap_int(.l = ., .f = sum) %>% 
         {ifelse(.>votethres, "Fail", "Pass")} %>% 
         factor(levels = c("Fail", "Pass"))
@@ -93,13 +108,14 @@ ensemble_pred <- function(lst_fitmdls, tbl_test = lst_mdlData$test$test, thres =
 
 ```
 
+將集成模型預測結果整理成 [tibble]{.obj} 
 ```{r}
 #| message: false
 #| warning: false
 
 # execute
 tbl_truthpred <- tibble(
-    `Truth` = lst_mdlData$test$test$Y, 
+    `Truth` = lst_test$test$Y, 
     `Model_Benchmark` = ensemble_pred(lst_fit$all), 
     `Model_130101` = ensemble_pred(lst_fit$`130101`), 
     `Model_140703` = ensemble_pred(lst_fit$`140703`)
@@ -107,39 +123,47 @@ tbl_truthpred <- tibble(
 
 ```
 
+* [Truth]{.obj}：實際結果，報單查驗結果為合格（Pass）或不合格（Fail）
+* [Model_Benchmark]{.obj}：預測結果，以 2011-01-01 至 2018-12-31 資料建構之集成模型
+* [Model_130101]{.obj}：預測結果，以 [2013-01-01]{.hl} 至 2018-12-31 資料建構之集成模型
+* [Model_140703]{.obj}：預測結果，以 [2011-01-01]{.hl} 至 2018-12-31 資料建構之集成模型
+```{r}
+#| echo: false
+tbl_truthpred %>% head()
+```
+
 
 
 ## Evaluate
 
-```{r}
-library(yardstick)
-library(ggplot2)
-library(patchwork)    # 多圖合併呈現
-library(tidyr)    # reshape data
-```
-
 ### confusion matrix
 
+視覺化混淆矩陣
 ```{r}
 
 # function
 plot_cfmx <- function(tbl_truthpred) {
     
     truth_col <- names(tbl_truthpred)[1]
-    pred_cols <- names(tbl_truthpred)[c(-1)]    # 取2至最後
+    pred_cols <- names(tbl_truthpred)[c(-1)]    # 取2至最後(不要元素1)
     
     plots_cfmx <- map(
         .x = pred_cols,    # atomic vector
         .f = \(x) {
             conf_mat(
                 data = tbl_truthpred, 
-                truth = all_of(truth_col),    # data-masking contexts is deprecated
+                
+                # pronouns (.data, .env) contexts is deprecated
+                truth = all_of(truth_col),    
                 estimate = all_of(x)
             ) %>% 
+            
+            # create graphic
             autoplot(type = "heatmap") + ggtitle(x)
         }
     )
     
+    # 設定list內ggplot的名稱
     names(plots_cfmx) <- pred_cols
     
     return(plots_cfmx)
@@ -148,15 +172,18 @@ plot_cfmx <- function(tbl_truthpred) {
 # execute
 plots_cfmx <- plot_cfmx(tbl_truthpred)
 
+```
+
+以 [patchwork]{.obj} 套件排列圖形
+```{r}
 # layout
-plots_cfmx$Model_Benchmark | 
+plots_cfmx$Model_Benchmark |
     (plots_cfmx$Model_130101 / plots_cfmx$Model_140703)
-
-
 ```
 
 ### metrics
 
+計算評估指標，包含[F-measure]{.obj}、[Precision]{.obj}、[Recall]{.obj}
 ```{r}
 
 # function
@@ -181,6 +208,8 @@ tabulate_metrics <- function(tbl_truthpred, func = multi_metric) {
             add_column(`.model` = x, .before = 1)
     ) %>% 
         bind_rows() %>% 
+        
+        # 展開指標名稱欄位
         pivot_wider(names_from = ".metric", values_from = ".estimate")
     
     return(tbl_estimates)
@@ -191,10 +220,12 @@ tabulate_metrics(tbl_truthpred)
 
 ```
 
+關於產品中分類 **生鮮冷凍冷藏蔬菜** 集成模型 **調整資料擷取期間** 之測試：
 
-
-
-
+1. 以 [2013-01-01]{.hl} 後的資料訓練的模型，其 [F-measure]{.obj} 明顯 [高]{.hl} 於以所有資料訓練的模型；
+而以 [2014-07-03]{.hl} 後的資料訓練的模型，其 [F-measure]{.obj} 明顯 [低]{.hl} 於以所有資料訓練的模型。
+調整資料擷取期間對於模型預測表現有相當程度影響，建議可納入BPI模型年度更新測試項目。
+2. 後續 **放入高風險特徵** 之測試，選擇以 [2013-01-01]{.hl} 後的資料建模。
 
 
 
