@@ -13,14 +13,14 @@
 
 ### 連結
 
-- 生鮮冷藏冷凍蔬菜
-  - [Data Wrangling](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/DataWrangling.html)
-  - [Handling Imbalanced Datasets](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html)
-  - [Model Fitting](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html)
-  - [Model Evaluating](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html)
+生鮮冷藏冷凍蔬菜
+- [Data Wrangling](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/DataWrangling.html)
+- [Handling Imbalanced Datasets](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/HandleImbData.html)
+- [Model Fitting](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelFitting.html)
+- [Model Evaluating](https://godgodgod11101.github.io/ML_BPI_FDA/vegetable/ModelEvaluating.html)
 
-- 生鮮冷藏冷凍水果
+生鮮冷藏冷凍水果
 
-- 香辛料
+香辛料
 
 
